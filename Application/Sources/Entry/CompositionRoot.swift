@@ -6,8 +6,11 @@ import Umbrella
 import SwiftyColor
 
 struct AppDependency {
-  typealias OpenURLHandler = (_ url: URL,
-                              _ options: [UIApplication.OpenURLOptionsKey: Any]) -> Bool
+  typealias OpenURLHandler = (
+    _ url: URL,
+    _ options: [UIApplication.OpenURLOptionsKey: Any]
+  ) -> Bool
+
   let window: UIWindow
   let navigator: Navigator
   let configureSDKs: () -> Void
@@ -19,9 +22,15 @@ extension AppDependency {
   private static let container = Container()
 
   static func resolve() -> AppDependency {
-    let navigator = Navigator()
 
+    // Window
+    let window = configureWindow()
+    container.register(UIWindow.self) { _ in  window }
+
+    // Navigator
+    let navigator = Navigator()
     NavigationMap.initialize(navigator: navigator, container: container)
+    container.register(Navigator.self) { _ in navigator }
 
     // Analytics
     let analytics = MyAppAnalytics()
@@ -36,23 +45,38 @@ extension AppDependency {
     container.register(SplashViewReactor.self) { _ in
       SplashViewReactor(appStoreService: appStoreService, authService: authService)
     }
-    container.autoregister(SplashViewController.Factory.self,
-                           dependency: SplashViewController.Dependency.init)
+    container.autoregister(
+      SplashViewController.Factory.self,
+      dependency: SplashViewController.Dependency.init
+    )
 
+    // Login
+    container.register(LoginViewReactor.self) { _ in
+      LoginViewReactor(authService: authService)
+    }
+    container.autoregister(
+      LoginViewController.Factory.self,
+      dependency: LoginViewController.Dependency.init
+    )
 
     // MainTabBarController
     container.register(MainTabBarViewReactor.self) { _ in
       MainTabBarViewReactor()
     }
-    container.autoregister(MainTabBarController.Factory.self,
-                           dependency: MainTabBarController.Dependency.init)
+    container.autoregister(
+      MainTabBarController.Factory.self,
+      dependency: MainTabBarController.Dependency.init
+    )
+
+    // RootViewController
+    window.rootViewController = container.resolve(SplashViewController.Factory.self)?.create()
 
     return AppDependency(
-        window: configureWindow(),
-        navigator: navigator,
-        configureSDKs: configureSDKs,
-        configureAppearance: configureAppearance,
-        openURL: self.openURLFactory(navigator: navigator)
+      window: window,
+      navigator: navigator,
+      configureSDKs: configureSDKs,
+      configureAppearance: configureAppearance,
+      openURL: self.openURLFactory(navigator: navigator)
     )
   }
 
@@ -61,9 +85,6 @@ extension AppDependency {
     window.frame = UIScreen.main.bounds
     window.backgroundColor = .black
     window.makeKeyAndVisible()
-    window.rootViewController = container
-      .resolve(MainTabBarController.Factory.self)?
-      .create(payload: .init(version: 0))
 
     return window
   }

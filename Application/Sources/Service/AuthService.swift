@@ -19,7 +19,6 @@ protocol AuthServiceType {
   //
   // - returns: An Observable of `AccessToken` instance.
 
-
   func logout()
 }
 
@@ -48,12 +47,10 @@ final class AuthService: AuthServiceType {
 
   fileprivate func loadAccessToken() -> AccessToken? {
     guard let accessToken = keychain["access_token"],
-          let refreshToken = keychain["refresh_token"],
-          let tokenType = keychain["token_type"] else { return nil }
+      let refreshToken = keychain["refresh_token"],
+      let tokenType = keychain["token_type"] else { return nil }
 
-    return AccessToken(accessToken: accessToken,
-                       refreshToken: refreshToken,
-                       tokenType: tokenType)
+    return AccessToken(accessToken: accessToken, refreshToken: refreshToken, tokenType: tokenType)
   }
 
   fileprivate func deleteAccessToken() {
