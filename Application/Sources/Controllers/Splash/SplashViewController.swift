@@ -28,11 +28,6 @@ final class SplashViewController: BaseViewController, FactoryModule, View {
     let mainTabBarControllerFactory: MainTabBarController.Factory
   }
 
-  // MARK: Constants
-
-  fileprivate enum Metric {
-  }
-
   // MARK: Properties
 
   fileprivate let window: UIWindow
