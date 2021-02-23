@@ -23,7 +23,7 @@ final class Networking: MoyaSugarProvider<MultiSugarTarget>, NetworkingProtocol 
     let session = MoyaProvider<MultiSugarTarget>.defaultAlamofireSession()
     session.sessionConfiguration.timeoutIntervalForRequest = 10
 
-    let networkPlugin: [PluginType] = plugins
+    let plugins: [PluginType] = plugins
 //    let networkClosure = {(_ change: NetworkActivityChangeType, _ target: TargetType) in
 //      switch change {
 //      case .began:
@@ -35,7 +35,7 @@ final class Networking: MoyaSugarProvider<MultiSugarTarget>, NetworkingProtocol 
 //    networkPlugin.append(NetworkActivityPlugin(networkActivityClosure: networkClosure))
 
     super.init(session: session,
-               plugins: networkPlugin)
+               plugins: plugins)
   }
 
   func request(

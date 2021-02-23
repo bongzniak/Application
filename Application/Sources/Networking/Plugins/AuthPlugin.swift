@@ -17,9 +17,13 @@ struct AuthPlugin: PluginType {
 
   func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
     var request = request
-    if let accessToken = authService.currentAccessToken?.accessToken {
-      request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+    if let accessToken = authService.currentAccessToken?.tokenTypeAndAccessToken {
+      request.addValue(accessToken, forHTTPHeaderField: "Authorization")
     }
     return request
+  }
+
+  func didReceive(_ result: Result<Moya.Response, MoyaError>, target: TargetType) {
+    // 403 에러 발생 시 refresh_token을 사용하여
   }
 }
