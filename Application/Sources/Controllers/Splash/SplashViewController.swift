@@ -4,79 +4,79 @@
 //
 //  Created by bongzniak on 2020/12/21.
 //
+import Foundation
+import UIKit
 
+import Pure
 import ReactorKit
 import AsyncDisplayKit
 import RxSwift
-import RxCocoa
 import RxCocoa_Texture
-import PureSwinject
+import URLNavigator
 
-final class SplashViewController: BaseViewController, View, FactoryModule {
+final class SplashViewController: BaseViewController, FactoryModule, View {
 
-  typealias Reactor = SplashViewReactor
   typealias Node = SplashViewController
+  typealias Reactor = SplashViewReactor
 
   // MARK: Dependency
 
   struct Dependency {
-    let reactor: SplashViewReactor
+    let reactor: Reactor
+    let window: UIWindow
+    let loginViewControllerFactory: LoginViewController.Factory
+    let mainTabBarControllerFactory: MainTabBarController.Factory
   }
 
   // MARK: Constants
 
-  fileprivate struct Metric {
-
+  fileprivate enum Metric {
   }
 
   // MARK: Properties
 
-  fileprivate let reactor: Reactor
-
+  fileprivate let window: UIWindow
+  fileprivate let loginViewControllerFactory: LoginViewController.Factory
+  fileprivate let mainTabBarControllerFactory: MainTabBarController.Factory
 
   // MARK: Nodes
 
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    reactor = dependency.reactor
+    defer { reactor = dependency.reactor }
+    window = dependency.window
+    loginViewControllerFactory = dependency.loginViewControllerFactory
+    mainTabBarControllerFactory = dependency.mainTabBarControllerFactory
 
     super.init()
 
-    // main thread
-    node.onDidLoad({ _ in })
+    view.backgroundColor = .yellow
   }
 
   required convenience init?(coder aDecoder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
 
-  // MARK: View Life Cycle
-
-  override func viewDidLoad() {
-    super.viewDidLoad()
-
-  }
-
   // MARK: Configuring
 
-  func bind(reactor: SplashViewReactor) {
+  func bind(reactor: Reactor) {
 
     // Action
     rx.viewDidAppear
-        .map { _ in
-          Reactor.Action.checkIfAuthenticated
-        }
-        .bind(to: reactor.action)
-        .disposed(by: self.disposeBag)
+      .map { _ in Reactor.Action.checkIfAuthenticated }
+      .bind(to: reactor.action)
+      .disposed(by: self.disposeBag)
 
     // State
-    reactor.state.map {
-          $0.isAuthenticated
-        }
-        .filterNil()
-        .distinctUntilChanged()
-        .subscribe(onNext: { _ in })
-        .disposed(by: self.disposeBag)
+    reactor.state.map { $0.isAuthenticated }
+      .filterNil()
+      .distinctUntilChanged()
+      .subscribe(onNext: { [weak self] isAuthenticated in
+        self?.window.rootViewController = isAuthenticated
+          ? self?.mainTabBarControllerFactory.create()
+          : self?.loginViewControllerFactory.create()
+      })
+      .disposed(by: self.disposeBag)
   }
 }

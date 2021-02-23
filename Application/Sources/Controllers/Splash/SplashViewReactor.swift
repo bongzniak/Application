@@ -6,7 +6,6 @@
 //
 
 import ReactorKit
-import RxCocoa
 import RxSwift
 
 final class SplashViewReactor: Reactor {
@@ -29,13 +28,21 @@ final class SplashViewReactor: Reactor {
   fileprivate let appStoreService: AppStoreServiceType
 
   init(appStoreService: AppStoreServiceType, authService: AuthServiceType) {
-    self.authService = authService
     self.appStoreService = appStoreService
+    self.authService = authService
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
     switch action {
     case .checkIfAuthenticated:
+      guard let accessToken = authService.currentAccessToken?.accessToken,
+        !accessToken.isEmpty
+      else {
+        return Observable.just(false).map(Mutation.setAuthenticated)
+      }
+
+      // TODO: - accessToken 유효여부 확인
+
       return Observable.just(true).map(Mutation.setAuthenticated)
     }
   }

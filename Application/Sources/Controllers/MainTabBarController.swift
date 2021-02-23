@@ -26,12 +26,6 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
     let reactor: MainTabBarViewReactor
   }
 
-  // MARK: Payload
-
-  struct Payload {
-    let version: Int
-  }
-
   // MARK: Constants
 
   fileprivate struct Metric {
@@ -42,16 +36,16 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
 
   var disposeBag = DisposeBag()
 
-  let reactor: Reactor
-
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    reactor = dependency.reactor
+    defer { reactor = dependency.reactor }
 
     super.init(nibName: nil, bundle: nil)
 
-    let viewController = UIViewController()
+    let viewController = UIViewController().then {
+      $0.view.backgroundColor = .blue
+    }
 
     let postItem = TabBarItem(title: "Temp",
                               viewController: viewController,
