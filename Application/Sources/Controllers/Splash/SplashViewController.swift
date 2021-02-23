@@ -45,8 +45,6 @@ final class SplashViewController: BaseViewController, FactoryModule, View {
     mainTabBarControllerFactory = dependency.mainTabBarControllerFactory
 
     super.init()
-
-    view.backgroundColor = .yellow
   }
 
   required convenience init?(coder aDecoder: NSCoder) {
