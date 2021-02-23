@@ -4,6 +4,7 @@
 //
 //  Created by bongzniak on 2020/12/21.
 //
+
 import Foundation
 import UIKit
 
@@ -39,7 +40,9 @@ final class SplashViewController: BaseViewController, FactoryModule, View {
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    defer { reactor = dependency.reactor }
+    defer {
+      reactor = dependency.reactor
+    }
     window = dependency.window
     loginViewControllerFactory = dependency.loginViewControllerFactory
     mainTabBarControllerFactory = dependency.mainTabBarControllerFactory
@@ -57,12 +60,16 @@ final class SplashViewController: BaseViewController, FactoryModule, View {
 
     // Action
     rx.viewDidAppear
-      .map { _ in Reactor.Action.checkIfAuthenticated }
+      .map { _ in
+        Reactor.Action.checkIfAuthenticated
+      }
       .bind(to: reactor.action)
       .disposed(by: self.disposeBag)
 
     // State
-    reactor.state.map { $0.isAuthenticated }
+    reactor.state.map {
+        $0.isAuthenticated
+      }
       .filterNil()
       .distinctUntilChanged()
       .subscribe(onNext: { [weak self] isAuthenticated in
