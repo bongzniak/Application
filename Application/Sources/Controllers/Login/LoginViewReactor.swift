@@ -9,11 +9,11 @@
 import Foundation
 import ReactorKit
 import RxSwift
+import FBSDKLoginKit
 
 class LoginViewReactor: Reactor {
 
   enum Action {
-    // actiom cases
   }
 
   enum Mutation {
@@ -22,6 +22,7 @@ class LoginViewReactor: Reactor {
 
   struct State {
     var isAuthenticated: Bool?
+    var loggedIn: Bool = false
   }
 
   let initialState = State()
@@ -33,8 +34,6 @@ class LoginViewReactor: Reactor {
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
-    // switch action {
-    // }
   }
 
   func reduce(state: State, mutation: Mutation) -> State {
@@ -42,5 +41,9 @@ class LoginViewReactor: Reactor {
     // switch mutation {
     // }
     return newState
+  }
+
+  func facebookLogin() {
+
   }
 }

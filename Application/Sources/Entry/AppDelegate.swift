@@ -7,6 +7,8 @@
 
 import UIKit
 import CoreData
+
+import FBSDKCoreKit
 import AsyncDisplayKit
 import URLNavigator
 
@@ -38,10 +40,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ASDisplayNode.shouldShowRangeDebugOverlay = true
 
     // FACEBOOK
-//    ApplicationDelegate.shared.application(
-//      application,
-//      didFinishLaunchingWithOptions: launchOptions
-//    )
+    ApplicationDelegate.shared.application(
+      application,
+      didFinishLaunchingWithOptions: launchOptions
+    )
     return true
   }
 
@@ -63,11 +65,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     // FACEBOOK
-//    ApplicationDelegate.shared.application(
-//      app,
-//      open: url,
-//      options: options
-//    )
+    ApplicationDelegate.shared.application(
+      app,
+      open: url,
+      options: options
+    )
     return false
   }
 }

@@ -16,6 +16,7 @@ import RxSwift
 import RxCocoa_Texture
 import Then
 import SwiftyColor
+import FBSDKLoginKit
 
 final class LoginViewController: BaseViewController, FactoryModule, View {
 
@@ -35,6 +36,7 @@ final class LoginViewController: BaseViewController, FactoryModule, View {
   private enum Metric {
     static let buttonLayoutSpecSpacing = 10.f
     static let buttonNodeHeighgt = 50.f
+    static let buttonNodeCornerRadius = 8.f
   }
 
   private enum Font {
@@ -49,7 +51,7 @@ final class LoginViewController: BaseViewController, FactoryModule, View {
   // MARK: Node
 
   private let facebookButtonNode = ASButtonNode().then {
-    $0.layer.cornerRadius = 10.f
+    $0.layer.cornerRadius = Metric.buttonNodeCornerRadius
     $0.layer.masksToBounds = true
     $0.backgroundColor = 0x3b5998.color
     $0.setTitle("Login with Facebook",
@@ -61,7 +63,9 @@ final class LoginViewController: BaseViewController, FactoryModule, View {
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    defer { reactor = dependency.reactor }
+    defer {
+      reactor = dependency.reactor
+    }
     window = dependency.window
     mainTabBarControllerFactory = dependency.mainTabBarControllerFactory
 
@@ -75,7 +79,17 @@ final class LoginViewController: BaseViewController, FactoryModule, View {
   // MARK: Configuring
 
   func bind(reactor: Reactor) {
-    window.rootViewController = mainTabBarControllerFactory.create()
+//    rx.viewDidLoad
+//    .subscribe(onNext: { [weak self] in
+//      self?.window.rootViewController = self?.mainTabBarControllerFactory.create()
+//    })
+//    .disposed(by: disposeBag)
+
+    facebookButtonNode.rx
+      .tap
+      .subscribe(onNext: { [weak self] in
+      self?.facebookLogin()
+    })
   }
 
   // MARK: Layout Spec
@@ -94,14 +108,37 @@ final class LoginViewController: BaseViewController, FactoryModule, View {
 
 extension LoginViewController {
   private func loginButtonsLayoutSpec() -> ASLayoutSpec {
+    let buttonDimention: ASDimension = .init(unit: .points, value: Metric.buttonNodeHeighgt)
+    let buttons = [facebookButtonNode]
+    for button in buttons {
+      button.style.height = buttonDimention
+    }
 
-    facebookButtonNode.style.height = .init(unit: .points, value: Metric.buttonNodeHeighgt)
     return ASStackLayoutSpec(
       direction: .vertical,
       spacing: Metric.buttonLayoutSpecSpacing,
       justifyContent: .end,
       alignItems: .stretch,
-      children: [facebookButtonNode]
+      children: buttons
     )
+  }
+
+  private func facebookLogin() {
+    LoginManager
+      .init()
+      .logIn(permissions: ["publicProfile", "email"], from: self) { loginResult, error in
+
+        guard let result = loginResult
+        else {
+          print(error)
+          return
+        }
+
+        if result.isCancelled {
+          print("유저 캔슬")
+        } else {
+          print(result.token)
+        }
+      }
   }
 }
