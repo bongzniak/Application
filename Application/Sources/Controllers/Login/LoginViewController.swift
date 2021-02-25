@@ -79,17 +79,23 @@ final class LoginViewController: BaseViewController, FactoryModule, View {
   // MARK: Configuring
 
   func bind(reactor: Reactor) {
-//    rx.viewDidLoad
-//    .subscribe(onNext: { [weak self] in
-//      self?.window.rootViewController = self?.mainTabBarControllerFactory.create()
-//    })
-//    .disposed(by: disposeBag)
+    facebookButtonNode.rx.tap
+      .map {
+        Reactor.Action.facebookLogin(viewController: self)
+      }
+      .bind(to: reactor.action)
+      .disposed(by: disposeBag)
 
-    facebookButtonNode.rx
-      .tap
-      .subscribe(onNext: { [weak self] in
-      self?.facebookLogin()
-    })
+    reactor.state.map {
+        $0.isLoggedIn
+      }
+      .filterNil()
+      .distinctUntilChanged()
+      .subscribe(onNext: { [weak self] isLoggedIn in
+        if isLoggedIn {
+          self?.window.rootViewController = self?.mainTabBarControllerFactory.create()
+        }
+      })
   }
 
   // MARK: Layout Spec
@@ -102,6 +108,12 @@ final class LoginViewController: BaseViewController, FactoryModule, View {
       child: insetLayout
     )
   }
+}
+
+// MARK: - Third part Login
+
+extension LoginViewController {
+
 }
 
 // MARK: - Layout Spec
@@ -121,24 +133,5 @@ extension LoginViewController {
       alignItems: .stretch,
       children: buttons
     )
-  }
-
-  private func facebookLogin() {
-    LoginManager
-      .init()
-      .logIn(permissions: ["publicProfile", "email"], from: self) { loginResult, error in
-
-        guard let result = loginResult
-        else {
-          print(error)
-          return
-        }
-
-        if result.isCancelled {
-          print("유저 캔슬")
-        } else {
-          print(result.token)
-        }
-      }
   }
 }

@@ -37,9 +37,12 @@ extension AppDependency {
     analytics.register(provider: FirebaseProvider())
 
     // Service & Networking
-    let authService = AuthService(navigator: navigator)
-    let networking = Networking(plugins: [AuthPlugin(authService: authService)])
-    let appStoreService = AppStoreService(networking: networking)
+    let nonPluginNetwork = Networking()
+    let authService = AuthService(networking: nonPluginNetwork)
+    let appStoreService = AppStoreService(networking: nonPluginNetwork)
+
+    let pluginnetworking = Networking(plugins: [AuthPlugin(authService: authService)])
+
 
     // Splash
     container.register(SplashViewReactor.self) { _ in

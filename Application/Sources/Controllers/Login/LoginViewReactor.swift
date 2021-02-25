@@ -14,15 +14,15 @@ import FBSDKLoginKit
 class LoginViewReactor: Reactor {
 
   enum Action {
+    case facebookLogin(viewController: UIViewController)
   }
 
   enum Mutation {
-    // mutation cases
+    case setLoggedIn(Bool)
   }
 
   struct State {
-    var isAuthenticated: Bool?
-    var loggedIn: Bool = false
+    var isLoggedIn: Bool?
   }
 
   let initialState = State()
@@ -34,16 +34,49 @@ class LoginViewReactor: Reactor {
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
+    switch action {
+    case let .facebookLogin(viewController):
+      return facebookAccess(viewController: viewController)
+        .asObservable()
+        .map {
+          $0
+        }
+        .map(authService.facebookAuthority)
+        .map { accessToken -> Mutation in
+          Mutation.setLoggedIn(true)
+        }
+    }
   }
 
   func reduce(state: State, mutation: Mutation) -> State {
-    var newState = state
-    // switch mutation {
-    // }
-    return newState
+    var state = state
+    switch mutation {
+    case let .setLoggedIn(isLoggedIn):
+      state.isLoggedIn = isLoggedIn
+      return state
+    }
   }
+}
 
-  func facebookLogin() {
+extension LoginViewReactor {
+  private func facebookAccess(viewController: UIViewController) -> Observable<String> {
+    Observable.create { observer -> Disposable in
+      let permissions = ["public_profile"]
+      LoginManager.init().logIn(permissions: permissions, from: viewController) { result, error in
+        guard let result = result,
+              let token = result.token?.tokenString,
+              let isExpired = result.token?.isExpired,
+              (error == nil) || token.isEmpty || isExpired
+        else {
+          Disposables.create()
+          return
+        }
 
+        observer.onNext(token)
+        observer.onCompleted()
+      }
+
+      return Disposables.create()
+    }
   }
 }

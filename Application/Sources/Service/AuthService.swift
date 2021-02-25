@@ -19,6 +19,8 @@ protocol AuthServiceType {
   //
   // - returns: An Observable of `AccessToken` instance.
 
+  func facebookAuthority(accessToken: String) -> Single<AccessToken>
+
   func logout()
 }
 
@@ -26,12 +28,20 @@ final class AuthService: AuthServiceType {
 
   fileprivate let keychain = Keychain(service: "com.bongzniak.application")
   private(set) var currentAccessToken: AccessToken?
-  private let navigator: NavigatorType
+  private let networking: Networking
 
-  init(navigator: NavigatorType) {
-    self.navigator = navigator
+  init(networking: Networking) {
+    self.networking = networking
     currentAccessToken = loadAccessToken()
     log.debug("currentAccessToken exists: \(currentAccessToken != nil)")
+  }
+
+  func facebookAuthority(accessToken: String) -> Single<AccessToken> {
+    networking.request(AuthAPI.facebookAuthority(accessToken: accessToken))
+      .map(AccessToken.self)
+      .do { [weak self] accessToken in
+        self?.currentAccessToken = accessToken
+      }
   }
 
   func logout() {
