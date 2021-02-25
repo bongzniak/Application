@@ -39,9 +39,9 @@ final class AuthService: AuthServiceType {
   func facebookAuthority(accessToken: String) -> Single<AccessToken> {
     networking.request(AuthAPI.facebookAuthority(accessToken: accessToken))
       .map(AccessToken.self)
-      .do { [weak self] accessToken in
+      .do(onSuccess: { [weak self] accessToken in
         self?.currentAccessToken = accessToken
-      }
+      })
   }
 
   func logout() {

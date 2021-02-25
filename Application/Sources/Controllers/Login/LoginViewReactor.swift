@@ -37,7 +37,6 @@ class LoginViewReactor: Reactor {
     switch action {
     case let .facebookLogin(viewController):
       return facebookAccess(viewController: viewController)
-        .asObservable()
         .map {
           $0
         }

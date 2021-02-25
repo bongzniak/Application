@@ -96,6 +96,7 @@ final class LoginViewController: BaseViewController, FactoryModule, View {
           self?.window.rootViewController = self?.mainTabBarControllerFactory.create()
         }
       })
+
   }
 
   // MARK: Layout Spec
