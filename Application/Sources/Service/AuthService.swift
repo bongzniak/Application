@@ -19,7 +19,7 @@ protocol AuthServiceType {
   //
   // - returns: An Observable of `AccessToken` instance.
 
-  func facebookAuthority(accessToken: String) -> Single<AccessToken>
+  func facebookAuthority(token: String) -> Single<AccessToken>
 
   func logout()
 }
@@ -36,12 +36,19 @@ final class AuthService: AuthServiceType {
     log.debug("currentAccessToken exists: \(currentAccessToken != nil)")
   }
 
-  func facebookAuthority(accessToken: String) -> Single<AccessToken> {
-    networking.request(AuthAPI.facebookAuthority(accessToken: accessToken))
+  func facebookAuthority(token: String) -> Single<AccessToken> {
+    networking.request(AuthAPI.facebookAuthority(token: token))
       .map(AccessToken.self)
       .do(onSuccess: { [weak self] accessToken in
-        self?.currentAccessToken = accessToken
+        try self?.login(accessToken)
+      }, onError: { error in
+        log.error(error)
       })
+  }
+
+  func login(_ accessToken: AccessToken) throws {
+    currentAccessToken = accessToken
+    try saveAccessToken(accessToken)
   }
 
   func logout() {

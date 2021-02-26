@@ -9,6 +9,9 @@
 import Moya
 
 struct AuthPlugin: PluginType {
+
+  typealias RootViewFactory = (UIWindow, LoginViewController) -> Void
+
   fileprivate let authService: AuthServiceType
 
   init(authService: AuthServiceType) {

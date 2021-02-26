@@ -37,13 +37,11 @@ class LoginViewReactor: Reactor {
     switch action {
     case let .facebookLogin(viewController):
       return facebookAccess(viewController: viewController)
-        .map {
-          $0
-        }
-        .map(authService.facebookAuthority)
-        .map { accessToken -> Mutation in
-          Mutation.setLoggedIn(true)
-        }
+        .asObservable()
+        .flatMap { self.authService.facebookAuthority(token: $0) }
+        .map { _ in true }
+        .catchErrorJustReturn(false)
+        .map(Mutation.setLoggedIn)
     }
   }
 
@@ -60,7 +58,7 @@ class LoginViewReactor: Reactor {
 extension LoginViewReactor {
   private func facebookAccess(viewController: UIViewController) -> Observable<String> {
     Observable.create { observer -> Disposable in
-      let permissions = ["public_profile"]
+      let permissions = ["public_profile", "email"]
       LoginManager.init().logIn(permissions: permissions, from: viewController) { result, error in
         guard let result = result,
               let token = result.token?.tokenString,

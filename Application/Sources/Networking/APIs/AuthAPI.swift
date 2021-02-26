@@ -1,24 +1,24 @@
 import MoyaSugar
 
 enum AuthAPI {
-  case facebookAuthority(accessToken: String)
+  case facebookAuthority(token: String)
 }
 
 extension AuthAPI: SugarTargetType {
   var baseURL: URL {
-    URL(string: "http://52.78.145.107")!
+    URL(string: "http://localhost:8081/api")!
   }
 
   var headers: [String: String]? {
     switch self {
-    case let .facebookAuthority(accessToken):
-      return ["Authorization": accessToken]
+    case let .facebookAuthority(token):
+      return ["Authorization": token]
     }
   }
 
   var route: Route {
     switch self {
-    case let .facebookAuthority(accessToken):
+    case let .facebookAuthority(token):
       return .get("/authority/facebook")
     }
   }
