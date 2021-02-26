@@ -4,6 +4,7 @@ import URLNavigator
 import Firebase
 import Umbrella
 import SwiftyColor
+import Moya
 
 struct AppDependency {
   typealias OpenURLHandler = (
@@ -37,11 +38,15 @@ extension AppDependency {
     analytics.register(provider: FirebaseProvider())
 
     // Service & Networking
-    let nonPluginNetwork = Networking()
-    let authService = AuthService(networking: nonPluginNetwork)
-    let appStoreService = AppStoreService(networking: nonPluginNetwork)
+    var plugins: [PluginType] = [LoggingPlugin()]
 
-    let pluginnetworking = Networking(plugins: [AuthPlugin(authService: authService)])
+    var networking = Networking(plugins: plugins)
+    let authService = AuthService(networking: networking)
+    let appStoreService = AppStoreService(networking: networking)
+
+    // append plgunin
+    plugins.append(AuthPlugin(authService: authService))
+    networking = Networking(plugins: plugins)
 
 
     // Splash
