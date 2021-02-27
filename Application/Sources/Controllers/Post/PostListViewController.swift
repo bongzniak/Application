@@ -15,6 +15,7 @@ import AsyncDisplayKit
 import RxSwift
 import RxCocoa_Texture
 import URLNavigator
+import IGListKit
 
 final class PostListViewController: BaseViewController, FactoryModule, View {
 
@@ -31,14 +32,31 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
 
   // MARK: Properties
 
+  lazy var collectionViewFlowLayout = UICollectionViewFlowLayout().then {
+    $0.scrollDirection = .vertical
+  }
+
+  lazy var collectionNode = ASCollectionNode(collectionViewLayout: collectionViewFlowLayout).then {
+    $0.backgroundColor = .blue
+  }
+
+  lazy var adapter: ListAdapter = {
+    ListAdapter(updater: ListAdapterUpdater(), viewController: self)
+  }()
+
   // MARK: Node
 
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    defer { reactor = dependency.reactor }
+    defer {
+      reactor = dependency.reactor
+    }
 
     super.init()
+
+    adapter.setASDKCollectionNode(collectionNode)
+    adapter.dataSource = self
   }
 
   required convenience init?(coder aDecoder: NSCoder) {
@@ -50,16 +68,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
   func bind(reactor: Reactor) {
     rx.viewDidLoad
       .subscribe(onNext: { [weak self] _ in
-        let searchItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"))
-        self?.navigationItem.leftBarButtonItem = searchItem
-
-        let envelopeItem = UIBarButtonItem(image: UIImage(systemName: "envelope.open"))
-        let calendarItem = UIBarButtonItem(image: UIImage(systemName: "calendar"))
-        let bellItem = UIBarButtonItem(image: UIImage(systemName: "bell"))
-        let personItem = UIBarButtonItem(image: UIImage(systemName: "person.circle"))
-        self?.navigationItem.rightBarButtonItems = [
-          personItem, bellItem, calendarItem, envelopeItem
-        ]
+        self?.configureNavigationItem()
       })
       .disposed(by: self.disposeBag)
   }
@@ -67,7 +76,41 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
   // MARK: Layout Spec
 
   override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
-    ASInsetLayoutSpec(insets: view.safeAreaInsets,
-                      child: ASLayoutSpec())
+    ASWrapperLayoutSpec(layoutElement: collectionNode)
+  }
+}
+
+extension PostListViewController {
+  // NavigationItem setting
+  private func configureNavigationItem() {
+    let searchItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"))
+    navigationItem.leftBarButtonItem = searchItem
+
+    let envelopeItem = UIBarButtonItem(image: UIImage(systemName: "envelope.open"))
+    let calendarItem = UIBarButtonItem(image: UIImage(systemName: "calendar"))
+    let bellItem = UIBarButtonItem(image: UIImage(systemName: "bell"))
+    let personItem = UIBarButtonItem(image: UIImage(systemName: "person.circle"))
+    navigationItem.rightBarButtonItems = [
+      personItem, bellItem, calendarItem, envelopeItem
+    ]
+  }
+}
+
+// MARK: - ListAdapterDataSource
+
+extension PostListViewController: ListAdapterDataSource {
+  func objects(for listAdapter: ListAdapter) -> [ListDiffable] {
+    []
+  }
+
+  func listAdapter(
+    _ listAdapter: ListAdapter,
+    sectionControllerFor object: Any
+  ) -> ListSectionController {
+    PostListSectionController()
+  }
+
+  func emptyView(for listAdapter: ListAdapter) -> UIView? {
+    nil
   }
 }

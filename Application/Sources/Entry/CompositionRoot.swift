@@ -48,7 +48,6 @@ extension AppDependency {
     plugins.append(AuthPlugin(authService: authService))
     networking = Networking(plugins: plugins)
 
-
     // Splash
     container.register(SplashViewReactor.self) { _ in
       SplashViewReactor(appStoreService: appStoreService, authService: authService)
@@ -98,12 +97,11 @@ extension AppDependency {
   }
 
   static func configureWindow() -> UIWindow {
-    let window = UIWindow(frame: UIScreen.main.bounds)
-    window.frame = UIScreen.main.bounds
-    window.backgroundColor = .black
-    window.makeKeyAndVisible()
-
-    return window
+    UIWindow(frame: UIScreen.main.bounds).then {
+      $0.frame = UIScreen.main.bounds
+      $0.backgroundColor = .black
+      $0.makeKeyAndVisible()
+    }
   }
 
   static func configureSDKs() {
