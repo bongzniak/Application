@@ -67,6 +67,15 @@ extension AppDependency {
       dependency: LoginViewController.Dependency.init
     )
 
+    // Post
+    container.register(PostListViewReactor.self) { _ in
+      PostListViewReactor()
+    }
+    container.autoregister(
+      PostListViewController.Factory.self,
+      dependency: PostListViewController.Dependency.init
+    )
+
     // MainTabBarController
     container.register(MainTabBarViewReactor.self) { _ in
       MainTabBarViewReactor()
@@ -102,15 +111,12 @@ extension AppDependency {
   }
 
   static func configureAppearance() {
-    let navigationBarBackgroundImage = UIImage.resizable().color(UIColor.black).image
-//    let navigationBarBackgroundImage = UIImage.resizable().color(.db_charcoal).image
+    let navigationBarBackgroundImage = UIImage.resizable().color(0x333333.color).image
     UINavigationBar.appearance().setBackgroundImage(navigationBarBackgroundImage, for: .default)
     UINavigationBar.appearance().shadowImage = UIImage()
-    UINavigationBar.appearance().barStyle = .black
-//    UINavigationBar.appearance().tintColor = .db_slate
-//    UITabBar.appearance().tintColor = .db_charcoal
-    UINavigationBar.appearance().tintColor = UIColor.red
-    UITabBar.appearance().tintColor = UIColor.red
+    UINavigationBar.appearance().barStyle = .blackTranslucent
+    UINavigationBar.appearance().tintColor = 0x9DA3A5.color
+    UITabBar.appearance().tintColor = 0x333333.color
   }
 
   static func openURLFactory(navigator: NavigatorType) -> AppDependency.OpenURLHandler {
