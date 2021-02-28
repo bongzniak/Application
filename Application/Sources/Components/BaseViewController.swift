@@ -29,11 +29,26 @@ class BaseViewController: ASViewController<ASDisplayNode> {
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = .background
+    configureNavigationItem()
   }
 
   // MARK: Rx
 
   var disposeBag = DisposeBag()
+
+  // MARK: Navigation
+
+  private func configureNavigationItem() {
+    let backItem = UIBarButtonItem(image: UIImage(systemName: "chevron.backward")).then {
+      $0.target = self
+      $0.action = #selector(navigationBackNodeDidTap)
+    }
+    navigationItem.leftBarButtonItem = backItem
+  }
+
+  @objc private func navigationBackNodeDidTap() {
+    navigationController?.popViewController(animated: true)
+  }
 
   // MARK: Forwarding
 

@@ -43,6 +43,7 @@ extension AppDependency {
     var networking = Networking(plugins: plugins)
     let authService = AuthService(networking: networking)
     let appStoreService = AppStoreService(networking: networking)
+    let postService = PostService(networking: networking)
 
     // append plgunin
     plugins.append(AuthPlugin(authService: authService))
@@ -68,12 +69,28 @@ extension AppDependency {
 
     // Post
     container.register(PostListViewReactor.self) { _ in
-      PostListViewReactor()
+      PostListViewReactor(postService: postService)
     }
     container.autoregister(
       PostListViewController.Factory.self,
       dependency: PostListViewController.Dependency.init
     )
+
+    // PostListSectionController
+    container.autoregister(
+      PostListSectionController.Factory.self,
+      dependency: PostListSectionController.Dependency.init
+    )
+
+    // PostListViewCell
+    let postListViewCellReactorFactory: (Post) -> PostListViewCellReactor = { post in
+      PostListViewCellReactor(post: post)
+    }
+    container.register(PostListViewCellNode.Factory.self) { _ in
+      PostListViewCellNode.Factory(dependency: .init(
+        reactorFactory: postListViewCellReactorFactory
+      ))
+    }
 
     // MainTabBarController
     container.register(MainTabBarViewReactor.self) { _ in

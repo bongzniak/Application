@@ -1,5 +1,5 @@
 //
-//  PostListReactor.swift
+//  PostListViewCellReactor.swift
 //  Application
 //
 //  Created by bongzniak on 2021/02/28.
@@ -9,8 +9,9 @@
 import Foundation
 import ReactorKit
 import RxSwift
+import Pure
 
-final class PostListSectionReactor: Reactor {
+final class PostListViewCellReactor: Reactor {
 
   enum Action {
   }
@@ -19,11 +20,13 @@ final class PostListSectionReactor: Reactor {
   }
 
   struct State {
+    var contents: String
   }
 
-  let initialState = State()
+  let initialState: State
 
-  init() {
+  init(post: Post) {
+    initialState = State(contents: post.contents)
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
@@ -32,9 +35,9 @@ final class PostListSectionReactor: Reactor {
   }
 
   func reduce(state: State, mutation: Mutation) -> State {
-    var newState = state
+    var state = state
     // switch mutation {
     // }
-    return newState
+    return state
   }
 }

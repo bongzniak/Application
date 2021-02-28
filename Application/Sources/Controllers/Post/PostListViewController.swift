@@ -16,6 +16,7 @@ import RxSwift
 import RxCocoa_Texture
 import URLNavigator
 import IGListKit
+import RxIGListKit
 
 final class PostListViewController: BaseViewController, FactoryModule, View {
 
@@ -26,25 +27,38 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
 
   struct Dependency {
     let reactor: Reactor
+    let postListSectionControllerFactory: PostListSectionController.Factory
   }
 
   // MARK: Constants
 
   // MARK: Properties
 
+  var posts: [Post] = []
+  let postListSectionControllerFactory: PostListSectionController.Factory
+
+  // MARK: Node
+
+  let refreshControl = UIRefreshControl()
   lazy var collectionViewFlowLayout = UICollectionViewFlowLayout().then {
     $0.scrollDirection = .vertical
   }
-
   lazy var collectionNode = ASCollectionNode(collectionViewLayout: collectionViewFlowLayout).then {
     $0.backgroundColor = .blue
   }
 
+  let objectsSignal = BehaviorSubject<[PostListSection]>(value: [])
+  lazy var dataSource = RxListAdapterDataSource<PostListSection>(
+    sectionControllerProvider: { [unowned self] (_, object) -> ListSectionController in
+    switch object {
+    case .post(let post):
+      return self.postListSectionControllerFactory.create()
+    }
+  })
+
   lazy var adapter: ListAdapter = {
     ListAdapter(updater: ListAdapterUpdater(), viewController: self)
   }()
-
-  // MARK: Node
 
   // MARK: Initializing
 
@@ -52,11 +66,12 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
     defer {
       reactor = dependency.reactor
     }
+    postListSectionControllerFactory = dependency.postListSectionControllerFactory
 
     super.init()
 
     adapter.setASDKCollectionNode(collectionNode)
-    adapter.dataSource = self
+    collectionNode.view.refreshControl = refreshControl
   }
 
   required convenience init?(coder aDecoder: NSCoder) {
@@ -66,11 +81,32 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
   // MARK: Configuring
 
   func bind(reactor: Reactor) {
+    // Action
     rx.viewDidLoad
-      .subscribe(onNext: { [weak self] _ in
-        self?.configureNavigationItem()
-      })
+      .map { Reactor.Action.refresh }
+      .bind(to: reactor.action)
       .disposed(by: self.disposeBag)
+
+    refreshControl.rx.controlEvent(.valueChanged)
+      .map { Reactor.Action.refresh }
+      .bind(to: reactor.action)
+      .disposed(by: disposeBag)
+
+    // State
+    reactor.state.map { $0.isRefreshing }
+      .distinctUntilChanged()
+      .bind(to: refreshControl.rx.isRefreshing)
+      .disposed(by: self.disposeBag)
+
+    objectsSignal
+      .bind(to: adapter.rx.objects(dataSource: dataSource))
+      .disposed(by: disposeBag)
+
+    reactor.state.map { $0.sections }
+      .subscribe { [weak self] sections in
+        self?.objectsSignal.onNext(sections)
+      }
+      .disposed(by: disposeBag)
   }
 
   // MARK: Layout Spec
@@ -96,21 +132,10 @@ extension PostListViewController {
   }
 }
 
-// MARK: - ListAdapterDataSource
+// MARK: - ASCollectionDataSource
 
-extension PostListViewController: ListAdapterDataSource {
-  func objects(for listAdapter: ListAdapter) -> [ListDiffable] {
-    []
-  }
-
-  func listAdapter(
-    _ listAdapter: ListAdapter,
-    sectionControllerFor object: Any
-  ) -> ListSectionController {
-    PostListSectionController()
-  }
-
-  func emptyView(for listAdapter: ListAdapter) -> UIView? {
-    nil
+extension PostListViewController: ASCollectionDelegate {
+  func collectionNode(_ collectionNode: ASCollectionNode, willDisplayItemWith node: ASCellNode) {
+    log.info("willDisplayItemWith")
   }
 }
