@@ -30,7 +30,7 @@ target 'Application' do
   pod 'RxCocoa-Texture'
   pod 'RxRelay'
   # pod 'RxDataSources'
-  # pod 'RxDataSources-Texture'
+  pod 'RxDataSources-Texture'
   # pod 'RxCodable'
   pod 'RxOptional'
   pod 'RxViewController'
@@ -38,7 +38,8 @@ target 'Application' do
 
   # UI
   pod 'Texture/IGListKit'
-  # pod 'RxIGListKit'
+  pod 'TextureSwiftSupport'
+  pod 'RxIGListKit'
   pod 'BonMot'
   pod 'SwiftyColor'
   pod 'SwiftyImage'

@@ -11,24 +11,38 @@ class Post: NSObject, ModelType {
     case decreaseLikeCount(id: Int)
   }
 
+  init(id: String, images: [String], contents: String) {
+    self.id = id
+    self.images = images
+    self.contents = contents
+  }
+
   var id: String
+//  var user: User
   var images: [String]
   var contents: String
-  var user: User
 
-  var viewCount: Int
-  var commentCount: Int
+//  var comment: Comment
+//  var commentCount: Int
+
+//  var likeUser: User
+  var likeCount: Int = 0
+
+  var viewCount: Int = 0
 
   var isLiked: Bool = false
-  var createdAt: Date
+  var createdAt: Date?
 
   enum CodingKeys: String, CodingKey {
     case id
+//    case user
     case images
     case contents
-    case user
+//    case comment
+//    case commentCount
+//    case likeUser
+    case likeCount
     case viewCount
-    case commentCount
     case isLiked
     case createdAt
   }

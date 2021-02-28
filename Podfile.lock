@@ -5,6 +5,7 @@ PODS:
   - CocoaLumberjack/Core (3.7.0)
   - CocoaLumberjack/Swift (3.7.0):
     - CocoaLumberjack/Core
+  - Differentiator (4.0.1)
   - FBSDKCoreKit (8.2.0):
     - FBSDKCoreKit/Basics (= 8.2.0)
     - FBSDKCoreKit/Core (= 8.2.0)
@@ -131,6 +132,14 @@ PODS:
     - RxCocoa (~> 5.0)
     - RxSwift (~> 5.0)
     - Texture (~> 2.7)
+  - RxDataSources-Texture (1.2.8):
+    - Differentiator (~> 4.0)
+    - RxCocoa (~> 5.0)
+    - RxSwift (~> 5.0)
+    - Texture (>= 2.7)
+  - RxIGListKit (1.0.1):
+    - IGListKit
+    - RxCocoa
   - RxKeyboard (1.0.0):
     - RxCocoa (~> 5.0)
     - RxSwift (~> 5.0)
@@ -173,6 +182,8 @@ PODS:
     - Texture/Core
   - Texture/Video (2.8.1):
     - Texture/Core
+  - TextureSwiftSupport (1.9.1):
+    - Texture/Core (~> 2.8)
   - Then (2.7.0)
   - Umbrella (0.12.0):
     - Umbrella/Core (= 0.12.0)
@@ -199,6 +210,8 @@ DEPENDENCIES:
   - ReactorKit
   - RxCocoa
   - RxCocoa-Texture
+  - RxDataSources-Texture
+  - RxIGListKit
   - RxKeyboard
   - RxOptional
   - RxRelay
@@ -209,6 +222,7 @@ DEPENDENCIES:
   - SwiftyImage
   - Swinject
   - Texture/IGListKit
+  - TextureSwiftSupport
   - Then
   - Umbrella
   - Umbrella/Firebase
@@ -220,6 +234,7 @@ SPEC REPOS:
     - BonMot
     - CGFloatLiteral
     - CocoaLumberjack
+    - Differentiator
     - FBSDKCoreKit
     - FBSDKLoginKit
     - Firebase
@@ -244,6 +259,8 @@ SPEC REPOS:
     - ReactorKit
     - RxCocoa
     - RxCocoa-Texture
+    - RxDataSources-Texture
+    - RxIGListKit
     - RxKeyboard
     - RxOptional
     - RxRelay
@@ -255,6 +272,7 @@ SPEC REPOS:
     - Swinject
     - SwinjectSafeAuto
     - Texture
+    - TextureSwiftSupport
     - Then
     - Umbrella
     - URLNavigator
@@ -265,6 +283,7 @@ SPEC CHECKSUMS:
   BonMot: 2217a66e5ddc6a8d2ffb759fe8c85a8528e0d3e7
   CGFloatLiteral: 0328648f666e3cb2263d5ee3972df9d320786d25
   CocoaLumberjack: e8955b9d337ac307103b0a34fd141c32f27e53c5
+  Differentiator: 886080237d9f87f322641dedbc5be257061b0602
   FBSDKCoreKit: 4afd6ff53d8133a433dbcda44451c9498f8c6ce4
   FBSDKLoginKit: 7181765f2524d7ebf82d9629066c8e6caafc99d0
   Firebase: 26223c695fe322633274198cb19dca8cb7e54416
@@ -289,6 +308,8 @@ SPEC CHECKSUMS:
   ReactorKit: 6d894a20c3d508344320901cd8e386fde92df4b6
   RxCocoa: 32065309a38d29b5b0db858819b5bf9ef038b601
   RxCocoa-Texture: 90abb54f5d153746fe414f4d04e6d2e6cf91d70e
+  RxDataSources-Texture: 39923cbe97a52d1a0863afd625d27892808806de
+  RxIGListKit: 2192e90c0e7ef8ecd37a8614b5560283fe0844f7
   RxKeyboard: 6683c4344304a00f943c158bd8a43ce5469c82a7
   RxOptional: b1fcd60856807a564c0215c2184b8d33e7826dc2
   RxRelay: d77f7d771495f43c556cbc43eebd1bb54d01e8e9
@@ -300,11 +321,12 @@ SPEC CHECKSUMS:
   Swinject: ddf78b8486dd9b71a667b852cad919ab4484478e
   SwinjectSafeAuto: 91266e1775ca6182f71b50e4f5e223e55a2b753c
   Texture: 8ecf6984065a1e54f06bf97b349ecca28582acd7
+  TextureSwiftSupport: 5317b8df13d3a3fe2881a6e438335a96797632fb
   Then: acfe0be7e98221c6204e12f8161459606d5d822d
   Umbrella: 4faf9786a6b29197608f6483711271104d237646
   URLNavigator: 2593c0e2d293732ec5c44503cf54dceba1a68085
   WeakMapTable: 05c694ce8439a7a9ebabb56187287a63c57673d6
 
-PODFILE CHECKSUM: 7ba497efd78fd5723f65d3f02351e47f98f28486
+PODFILE CHECKSUM: eb689b4142fbf19b303dc24880fbbbf981e1054c
 
 COCOAPODS: 1.8.4

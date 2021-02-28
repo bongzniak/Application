@@ -16,7 +16,7 @@ import RxSwift
 import RxCocoa_Texture
 import URLNavigator
 
-final class PostListSectionController: BaseASListSectionController<Post> {
+final class PostListSectionController: BaseASListSectionController<Post>, FactoryModule, View {
 
   typealias Node = PostListSectionController
   typealias Reactor = PostListSectionReactor
@@ -24,19 +24,24 @@ final class PostListSectionController: BaseASListSectionController<Post> {
   // MARK: Dependency
 
   struct Dependency {
-    let reactor: Reactor
+    let postListViewCellNodeFactory: PostListViewCellNode.Factory
   }
 
   // MARK: Constants
 
   // MARK: Properties
+  let postListViewCellNodeFactory: PostListViewCellNode.Factory
 
   // MARK: Node
 
   // MARK: Initializing
 
-  override init() {
+  init(dependency: Dependency, payload: Payload) {
+    postListViewCellNodeFactory = dependency.postListViewCellNodeFactory
+
     super.init()
+
+    supplementaryViewSource = self
   }
 
   required convenience init?(coder aDecoder: NSCoder) {
@@ -45,10 +50,18 @@ final class PostListSectionController: BaseASListSectionController<Post> {
 
   // MARK: Configuring
 
+  func bind(reactor: PostListSectionReactor) {
+  }
+
   // MARK: ASSectionController
 
   override func nodeForItem(at index: Int) -> ASCellNode {
-    ASCellNode()
+    guard let post = object, post is Post
+    else {
+      return ASCellNode()
+    }
+
+    return postListViewCellNodeFactory.create(payload: .init(post: post))
   }
 }
 
@@ -57,7 +70,7 @@ final class PostListSectionController: BaseASListSectionController<Post> {
 extension PostListSectionController: ListSupplementaryViewSource, ASSupplementaryNodeSource {
 
   func supportedElementKinds() -> [String] {
-    [UICollectionView.elementKindSectionHeader]
+    [UICollectionView.elementKindSectionHeader, UICollectionView.elementKindSectionFooter]
   }
 
   func viewForSupplementaryElement(
@@ -72,7 +85,10 @@ extension PostListSectionController: ListSupplementaryViewSource, ASSupplementar
   }
 
   func sizeForSupplementaryView(ofKind elementKind: String, at index: Int) -> CGSize {
-    ASIGListSupplementaryViewSourceMethods.sizeForSupplementaryView(ofKind: elementKind, at: index)
+    ASIGListSupplementaryViewSourceMethods.sizeForSupplementaryView(
+      ofKind: elementKind,
+      at: index
+    )
   }
 
   func nodeBlockForSupplementaryElement(
@@ -89,6 +105,12 @@ extension PostListSectionController: ListSupplementaryViewSource, ASSupplementar
   }
 
   func nodeForSupplementaryElement(ofKind kind: String, at index: Int) -> ASCellNode {
-    ASCellNode()
+    guard var post = object
+    else {
+      return ASCellNode()
+    }
+
+    post.contents = "asdasdasdasdasd"
+    return postListViewCellNodeFactory.create(payload: .init(post: post))
   }
 }
