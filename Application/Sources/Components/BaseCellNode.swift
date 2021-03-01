@@ -12,6 +12,7 @@ class BaseCellNode: ASCellNode {
   override init() {
     super.init()
 
+    selectionStyle = .none
     backgroundColor = .white
     automaticallyManagesSubnodes = true
   }
