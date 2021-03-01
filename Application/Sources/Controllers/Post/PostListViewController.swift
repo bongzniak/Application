@@ -47,6 +47,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
   }
   lazy var collectionNode = ASCollectionNode(collectionViewLayout: collectionViewFlowLayout).then {
     $0.backgroundColor = .blue
+    $0.style.flexGrow = 1.0
   }
 
   let objectsSignal = BehaviorSubject<[PostListSection]>(value: [])

@@ -80,7 +80,14 @@ extension PostListBindingSectionController: ListBindingSectionControllerDataSour
     let id = formatter1.string(from: today)
 
     let user = UserViewModel(id: id, nickname: "", profileUrl: "", datetime: "")
-    let comment = CommentViewModel(
+    let comment1 = CommentViewModel(
+      id: id,
+      userID: "test: \(id)",
+      userNickname: "bongzniak",
+      contents: "contents",
+      datetime: "Today"
+    )
+    let comment2 = CommentViewModel(
       id: id,
       userID: "test: \(id)",
       userNickname: "bongzniak",
@@ -88,17 +95,19 @@ extension PostListBindingSectionController: ListBindingSectionControllerDataSour
       datetime: "Today"
     )
 
-    return [user, comment]
+    return [user, comment1, comment2]
   }
 
   func sectionController(
     _ sectionController: ListBindingSectionController<ListDiffable>,
     cellForViewModel viewModel: Any, at index: Int
   ) -> UICollectionViewCell & ListBindable {
+    // swiftlint:disable force_cast
     ASIGListSectionControllerMethods.cellForItem(
       at: index,
       sectionController: self
     ) as! UICollectionViewCell & ListBindable
+    // swiftlint:enable force_cast
   }
 
   func sectionController(
@@ -120,10 +129,10 @@ extension PostListBindingSectionController: ListBindingSectionControllerDataSour
     if let post = viewModels[index] as? Post {
       return postListViewCellNodeFactory.create(payload: .init(post: post))
     }
-    if let post = viewModels[index] as? UserViewModel {
+    if viewModels[index] is UserViewModel {
       return PostUserProfileCellNode()
     }
-    if let post = viewModels[index] as? CommentViewModel {
+    if viewModels[index] is CommentViewModel {
       return PostCommentProfileCellNode()
     }
 
