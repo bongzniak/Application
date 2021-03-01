@@ -20,7 +20,8 @@ final class PostService: PostServiceType {
   }
 
   func posts(page: Int, size: Int) -> Single<[Post]> {
-//    networking.request(PostAPI.posts(page: page, size: size)).map([Post].self)
+//    networking.request(PostAPI.posts(page: page, size: size))
+//      .map([Post].self)
     let posts: [Post] = [
       Post(id: "1", images: ["1"], contents: "111111"),
       Post(id: "2", images: ["2"], contents: "222222"),

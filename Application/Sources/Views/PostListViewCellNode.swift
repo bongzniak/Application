@@ -38,7 +38,15 @@ final class PostListViewCellNode: BaseCellNode, FactoryModule, View {
 
   // MARK: Node
 
-  lazy var contentNode = ASTextNode()
+  lazy var imageNode = ASNetworkImageNode().then {
+    $0.contentMode = .scaleAspectFill
+//    $0.imageModificationBlock = ASImageNodeRoundBorderModificationBlock(0, nil)
+//    $0.backgroundColor = .red
+//    $0.layer.cornerRadius = 25.f
+//    $0.layer.masksToBounds = true
+  }
+  lazy var contentsNode = ASTextNode()
+  lazy var timeIntervalLabel = ASTextNode()
 
   // MARK: Initializing
 
@@ -61,17 +69,42 @@ final class PostListViewCellNode: BaseCellNode, FactoryModule, View {
       .map {
         $0.contents
       }
-      .asObservable()
-      .bind(to: contentNode.rx.text(Node.contentsStyle.attributes), setNeedsLayout: self)
+      .bind(to: contentsNode.rx.text(Node.contentsStyle.attributes), setNeedsLayout: self)
       .disposed(by: disposeBag)
   }
 
   // MARK: Layout Spec
 
   override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
-    let spec = ASWrapperLayoutSpec(layoutElement: contentNode)
-    return ASInsetLayoutSpec(insets: .init(verticalInset: 10.f, horizontalInset: 10.f),
-                             child: spec)
+
+    var headerChildren: [ASLayoutElement] = []
+
+    let headerStack = ASStackLayoutSpec.horizontal()
+    headerStack.alignItems = .center
+    headerStack.spacing = 10.f
+
+    imageNode.style.preferredSize = CGSize(width: 50.f, height: 50.f)
+    imageNode.backgroundColor = .red
+    headerChildren.append(imageNode)
+
+    contentsNode.style.grow(1.f)
+    headerChildren.append(contentsNode)
+
+    let spacer = ASLayoutSpec()
+    spacer.style.flexGrow = 1.f
+    headerChildren.append(spacer)
+
+    timeIntervalLabel.attributedText = "now".styled(with: Node.contentsStyle)
+    headerChildren.append(timeIntervalLabel)
+
+    headerStack.children = headerChildren
+
+    let verticalStack = ASStackLayoutSpec.vertical()
+    verticalStack.children = [
+      ASInsetLayoutSpec(insets: .init(horizontalInset: 16.f), child: headerStack)
+    ]
+    verticalStack.style.width = ASDimension(unit: .points, value: 375.f)
+    return verticalStack
   }
 }
 

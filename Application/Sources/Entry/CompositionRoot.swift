@@ -43,11 +43,11 @@ extension AppDependency {
     var networking = Networking(plugins: plugins)
     let authService = AuthService(networking: networking)
     let appStoreService = AppStoreService(networking: networking)
-    let postService = PostService(networking: networking)
 
-    // append plgunin
+    // Append AuthPlugin plgunin
     plugins.append(AuthPlugin(authService: authService))
     networking = Networking(plugins: plugins)
+    let postService = PostService(networking: networking)
 
     // Splash
     container.register(SplashViewReactor.self) { _ in
@@ -82,13 +82,21 @@ extension AppDependency {
       dependency: PostListSectionController.Dependency.init
     )
 
-    // PostListViewCell
-    let postListViewCellReactorFactory: (Post) -> PostListViewCellReactor = { post in
-      PostListViewCellReactor(post: post)
+    // PostListSectionController
+    container.register(PostListBindingSectionReactor.self) { _ in
+      PostListBindingSectionReactor()
     }
+    container.autoregister(
+      PostListBindingSectionController.Factory.self,
+      dependency: PostListBindingSectionController.Dependency.init
+    )
+
+    // PostListViewCell
     container.register(PostListViewCellNode.Factory.self) { _ in
       PostListViewCellNode.Factory(dependency: .init(
-        reactorFactory: postListViewCellReactorFactory
+        reactorFactory: { (post: Post) -> PostListViewCellReactor in
+          PostListViewCellReactor(post: post)
+        }
       ))
     }
 
@@ -109,7 +117,7 @@ extension AppDependency {
       navigator: navigator,
       configureSDKs: configureSDKs,
       configureAppearance: configureAppearance,
-      openURL: self.openURLFactory(navigator: navigator)
+      openURL: openURLFactory(navigator: navigator)
     )
   }
 
@@ -129,7 +137,7 @@ extension AppDependency {
     let navigationBarBackgroundImage = UIImage.resizable().color(0x333333.color).image
     UINavigationBar.appearance().setBackgroundImage(navigationBarBackgroundImage, for: .default)
     UINavigationBar.appearance().shadowImage = UIImage()
-    UINavigationBar.appearance().barStyle = .blackTranslucent
+    UINavigationBar.appearance().barStyle = .black
     UINavigationBar.appearance().tintColor = 0x9DA3A5.color
     UITabBar.appearance().tintColor = 0x333333.color
   }
