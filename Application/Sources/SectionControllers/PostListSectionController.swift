@@ -30,6 +30,7 @@ final class PostListSectionController: BaseASListSectionController<Post>, Factor
   // MARK: Constants
 
   // MARK: Properties
+
   let postListViewCellNodeFactory: PostListViewCellNode.Factory
 
   // MARK: Node

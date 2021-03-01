@@ -28,6 +28,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
   struct Dependency {
     let reactor: Reactor
     let postListSectionControllerFactory: PostListSectionController.Factory
+    let postListBindingSectionControllerFactory: PostListBindingSectionController.Factory
   }
 
   // MARK: Constants
@@ -36,6 +37,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
 
   var posts: [Post] = []
   let postListSectionControllerFactory: PostListSectionController.Factory
+  let postListBindingSectionControllerFactory: PostListBindingSectionController.Factory
 
   // MARK: Node
 
@@ -52,7 +54,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
     sectionControllerProvider: { [unowned self] (_, object) -> ListSectionController in
     switch object {
     case .post(let post):
-      return self.postListSectionControllerFactory.create()
+      return self.postListBindingSectionControllerFactory.create()
     }
   })
 
@@ -67,6 +69,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
       reactor = dependency.reactor
     }
     postListSectionControllerFactory = dependency.postListSectionControllerFactory
+    postListBindingSectionControllerFactory = dependency.postListBindingSectionControllerFactory
 
     super.init()
 

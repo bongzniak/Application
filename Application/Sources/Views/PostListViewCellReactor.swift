@@ -17,16 +17,21 @@ final class PostListViewCellReactor: Reactor {
   }
 
   enum Mutation {
+    case setPost(Post)
   }
 
   struct State {
+    var title: String
     var contents: String
   }
 
   let initialState: State
 
   init(post: Post) {
-    initialState = State(contents: post.contents)
+    initialState = State(
+      title: post.id,
+      contents: post.contents
+    )
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
@@ -36,8 +41,10 @@ final class PostListViewCellReactor: Reactor {
 
   func reduce(state: State, mutation: Mutation) -> State {
     var state = state
-    // switch mutation {
-    // }
+    switch mutation {
+    case .setPost(let post):
+      state.contents = post.contents
+    }
     return state
   }
 }
