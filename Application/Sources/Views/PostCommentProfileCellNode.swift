@@ -2,13 +2,26 @@
 // Created by bongzniak on 2021/03/01.
 //
 
+import Pure
+import ReactorKit
 import AsyncDisplayKit
 import BonMot
 import TextureSwiftSupport
 
-class PostCommentProfileCellNode: BaseCellNode {
+final class PostCommentProfileCellNode: BaseCellNode, FactoryModule, View {
 
   typealias Node = PostCommentProfileCellNode
+  typealias Reactor = PostCommentProfileCellReactor
+
+  // MARK: Dependency
+
+  struct Dependency {
+    let reactorFactory: (_ comment: CommentViewModel) -> Reactor
+  }
+
+  struct Payload {
+    let comment: CommentViewModel
+  }
 
   // MARK: - Constants
 
@@ -26,7 +39,7 @@ class PostCommentProfileCellNode: BaseCellNode {
 
   // MARK: - Node
 
-  lazy var profileImageNode = ASDisplayNode().then {
+  lazy var profileImageNode = ASNetworkImageNode().then {
     $0.style.preferredSize = .init(width: 30.f, height: 30.f)
     $0.backgroundColor = .red
     $0.cornerRadius = 15.f
@@ -34,21 +47,47 @@ class PostCommentProfileCellNode: BaseCellNode {
     $0.style.flexShrink = 1.0
     $0.style.flexGrow = 0.0
   }
-  lazy var nicknameNode = ASTextNode().then {
-    $0.style.flexShrink = 1.0
+  lazy var nicknameNode = BaseASTextNode().then {
     $0.style.flexGrow = 1.0
   }
-  lazy var datetimeNode = ASTextNode().then {
-    $0.style.flexShrink = 1.0
-  }
+  lazy var datetimeNode = BaseASTextNode()
 
   lazy var replyNode = ASButtonNode()
   lazy var likeNode = ASButtonNode()
 
   // MARK: - Initializing
 
-  override init() {
+  // MARK: Initializing
+
+  init(dependency: Dependency, payload: Payload) {
+    defer {
+      reactor = dependency.reactorFactory(payload.comment)
+    }
+
     super.init()
+  }
+
+  required convenience init?(coder aDecoder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  // MARK: Configuring
+
+  func bind(reactor: Reactor) {
+    reactor.state.map {
+        $0.profileUrl
+      }
+      .bind(to: profileImageNode.rx.url)
+      .disposed(by: disposeBag)
+
+    reactor.state.map {
+        NSMutableAttributedString()
+          .append(attributeString: $0.nickname.styled(with: Attribute.nicknameAttributes))
+          .append(attributeString: " ".styled(with: Attribute.contentsAttributes))
+          .append(attributeString: $0.contents.styled(with: Attribute.contentsAttributes))
+      }
+      .bind(to: nicknameNode.rx.attributedText, setNeedsLayout: self)
+      .disposed(by: disposeBag)
   }
 
   // MARK: - Layout Spec
@@ -103,18 +142,7 @@ extension PostCommentProfileCellNode {
   }
 
   func nicknameLayoutSpec() -> ASLayoutSpec {
-    let contents = """
-                   ㅁㄴ어ㅏㅣㅁㄴ어만ㅁㄴ어ㅏㅣ
-                   ㅁㄴ어ㅏㅣㅁ너아ㅣㅁㄴㅇ
-                   ㅁㄴ어ㅏㅣㅁ너아ㅣ먼이마너이ㅏ먼이마넝
-                   """
-    let attributeString = NSMutableAttributedString()
-      .append(attributeString: "bongzniak".styled(with: Attribute.nicknameAttributes))
-      .append(attributeString: " ".styled(with: Attribute.contentsAttributes))
-      .append(attributeString: contents.styled(with: Attribute.contentsAttributes))
-    nicknameNode.attributedText = attributeString
-
-    return ASStackLayoutSpec(
+    ASStackLayoutSpec(
       direction: .horizontal,
       spacing: 10.0,
       justifyContent: .start,

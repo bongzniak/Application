@@ -27,6 +27,8 @@ final class PostListBindingSectionController: ListBindingSectionController<Post>
   struct Dependency {
     let reactor: Reactor
     let postListViewCellNodeFactory: PostListViewCellNode.Factory
+    let postUserProfileCellNodeFactory: PostUserProfileCellNode.Factory
+    let postCommentProfileCellNodeFactory: PostCommentProfileCellNode.Factory
   }
 
   // MARK: Constants
@@ -36,6 +38,8 @@ final class PostListBindingSectionController: ListBindingSectionController<Post>
   var disposeBag = DisposeBag()
 
   let postListViewCellNodeFactory: PostListViewCellNode.Factory
+  let postUserProfileCellNodeFactory: PostUserProfileCellNode.Factory
+  let postCommentProfileCellNodeFactory: PostCommentProfileCellNode.Factory
 
   // MARK: Node
 
@@ -44,10 +48,13 @@ final class PostListBindingSectionController: ListBindingSectionController<Post>
   init(dependency: Dependency, payload: Payload) {
     defer { reactor = dependency.reactor }
     postListViewCellNodeFactory = dependency.postListViewCellNodeFactory
+    postUserProfileCellNodeFactory = dependency.postUserProfileCellNodeFactory
+    postCommentProfileCellNodeFactory = dependency.postCommentProfileCellNodeFactory
 
     super.init()
 
     dataSource = self
+    supplementaryViewSource = self
   }
 
   required convenience init?(coder aDecoder: NSCoder) {
@@ -79,18 +86,22 @@ extension PostListBindingSectionController: ListBindingSectionControllerDataSour
     formatter1.dateStyle = .short
     let id = formatter1.string(from: today)
 
-    let user = UserViewModel(id: id, nickname: "", profileUrl: "", datetime: "")
+    let user = UserViewModel(
+      userID: id,
+      profileUrl: "https://image.rocketpunch.com/company/24697/tryusncompany_logo_1559628600.png?s=100x100&t=inside",
+      nickname: "bongzniak"
+    )
     let comment1 = CommentViewModel(
-      id: id,
-      userID: "test: \(id)",
-      userNickname: "bongzniak",
+      userID: "1: \(id)",
+      userNickname: "bongzniak-1",
+      commentID: "\(id)1",
       contents: "contents",
       datetime: "Today"
     )
     let comment2 = CommentViewModel(
-      id: id,
-      userID: "test: \(id)",
-      userNickname: "bongzniak",
+      userID: "2: \(id)",
+      userNickname: "bongzniak-2",
+      commentID: "\(id)2",
       contents: "contents",
       datetime: "Today"
     )
@@ -126,14 +137,61 @@ extension PostListBindingSectionController: ListBindingSectionControllerDataSour
   }
 
   func nodeForItem(at index: Int) -> ASCellNode {
-    if let post = viewModels[index] as? Post {
-      return postListViewCellNodeFactory.create(payload: .init(post: post))
+    if let user = viewModels[index] as? UserViewModel {
+      return postUserProfileCellNodeFactory.create(payload: .init(user: user))
     }
-    if viewModels[index] is UserViewModel {
-      return PostUserProfileCellNode()
+    if let comment = viewModels[index] as? CommentViewModel {
+      return postCommentProfileCellNodeFactory.create(payload: .init(comment: comment))
     }
-    if viewModels[index] is CommentViewModel {
-      return PostCommentProfileCellNode()
+
+    return ASCellNode()
+  }
+}
+
+// MARK: - ListSupplementaryViewSource
+
+extension PostListBindingSectionController: ListSupplementaryViewSource,
+  ASSupplementaryNodeSource {
+
+  func supportedElementKinds() -> [String] {
+    [UICollectionView.elementKindSectionHeader]
+  }
+
+  func viewForSupplementaryElement(
+    ofKind elementKind: String,
+    at index: Int
+  ) -> UICollectionReusableView {
+    ASIGListSupplementaryViewSourceMethods.viewForSupplementaryElement(
+      ofKind: elementKind,
+      at: index,
+      sectionController: self
+    )
+  }
+
+  func sizeForSupplementaryView(ofKind elementKind: String, at index: Int) -> CGSize {
+    ASIGListSupplementaryViewSourceMethods.sizeForSupplementaryView(
+      ofKind: elementKind,
+      at: index
+    )
+  }
+
+  func nodeBlockForSupplementaryElement(
+    ofKind elementKind: String,
+    at index: Int
+  ) -> ASCellNodeBlock {
+    { [weak self] in
+      guard let `self` = self else {
+        return ASCellNode()
+      }
+
+      return self.nodeForSupplementaryElement(ofKind: elementKind, at: index)
+    }
+  }
+
+  func nodeForSupplementaryElement(ofKind kind: String, at index: Int) -> ASCellNode {
+    guard var post = object
+    else {
+      return ASCellNode()
     }
 
     return ASCellNode()

@@ -100,6 +100,24 @@ extension AppDependency {
       ))
     }
 
+    // PostUserProfileCell
+    container.register(PostUserProfileCellNode.Factory.self) { _ in
+      PostUserProfileCellNode.Factory(dependency: .init(
+        reactorFactory: { (user: UserViewModel) -> PostUserProfileCellReactor in
+          PostUserProfileCellReactor(user: user)
+        }
+      ))
+    }
+
+    // PostCommentProfileCell
+    container.register(PostCommentProfileCellNode.Factory.self) { _ in
+      PostCommentProfileCellNode.Factory(dependency: .init(
+        reactorFactory: { (comment: CommentViewModel) -> PostCommentProfileCellReactor in
+          PostCommentProfileCellReactor(comment: comment)
+        }
+      ))
+    }
+
     // MainTabBarController
     container.register(MainTabBarViewReactor.self) { _ in
       MainTabBarViewReactor()

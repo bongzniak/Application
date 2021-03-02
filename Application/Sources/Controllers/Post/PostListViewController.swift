@@ -48,6 +48,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
   lazy var collectionNode = ASCollectionNode(collectionViewLayout: collectionViewFlowLayout).then {
     $0.backgroundColor = .blue
     $0.style.flexGrow = 1.0
+    $0.style.flexShrink = 1.0
   }
 
   let objectsSignal = BehaviorSubject<[PostListSection]>(value: [])
@@ -103,7 +104,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
       .disposed(by: self.disposeBag)
 
     objectsSignal
-      .bind(to: adapter.rx.objects(dataSource: dataSource))
+      .bind(to: adapter.rx.objects(for: dataSource))
       .disposed(by: disposeBag)
 
     reactor.state.map { $0.sections }

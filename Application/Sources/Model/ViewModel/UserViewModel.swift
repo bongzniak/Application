@@ -6,15 +6,13 @@ import Foundation
 
 class UserViewModel: NSObject {
 
-  var id: String
+  var userID: String
   var nickname: String
   var profileUrl: String
-  var datetime: String
 
-  init(id: String, nickname: String, profileUrl: String, datetime: String) {
-    self.id = id
-    self.nickname = nickname
+  init(userID: String, profileUrl: String, nickname: String) {
+    self.userID = userID
     self.profileUrl = profileUrl
-    self.datetime = datetime
+    self.nickname = nickname
   }
 }
