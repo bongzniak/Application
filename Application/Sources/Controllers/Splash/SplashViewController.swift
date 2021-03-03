@@ -73,7 +73,7 @@ final class SplashViewController: BaseViewController, FactoryModule, View {
       .filterNil()
       .distinctUntilChanged()
       .subscribe(onNext: { [weak self] isAuthenticated in
-        self?.window.rootViewController = isAuthenticated
+        self?.window.rootViewController = !isAuthenticated
           ? self?.mainTabBarControllerFactory.create()
           : self?.loginViewControllerFactory.create()
       })

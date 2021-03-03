@@ -101,19 +101,19 @@ extension AppDependency {
     }
 
     // PostUserProfileCell
-    container.register(PostUserProfileCellNode.Factory.self) { _ in
-      PostUserProfileCellNode.Factory(dependency: .init(
-        reactorFactory: { (user: UserViewModel) -> PostUserProfileCellReactor in
-          PostUserProfileCellReactor(user: user)
+    container.register(UserProfileCellNode.Factory.self) { _ in
+      UserProfileCellNode.Factory(dependency: .init(
+        reactorFactory: { (user: UserViewModel) -> UserProfileCellReactor in
+          UserProfileCellReactor(user: user)
         }
       ))
     }
 
     // PostCommentProfileCell
-    container.register(PostCommentProfileCellNode.Factory.self) { _ in
-      PostCommentProfileCellNode.Factory(dependency: .init(
-        reactorFactory: { (comment: CommentViewModel) -> PostCommentProfileCellReactor in
-          PostCommentProfileCellReactor(comment: comment)
+    container.register(CommentWithProfileCellNode.Factory.self) { _ in
+      CommentWithProfileCellNode.Factory(dependency: .init(
+        reactorFactory: { (comment: CommentViewModel) -> CommentWithProfileCellReactor in
+          CommentWithProfileCellReactor(comment: comment)
         }
       ))
     }

@@ -118,7 +118,7 @@ class BaseViewController: ASViewController<ASDisplayNode> {
   private var animateLayoutTransitionSuperBlockStack: [AnimateLayoutTransitionSuperBlock] = []
 
   private func animateLayoutTransition(_ context: ASContextTransitioning,
-                                       _ superBlock: AnimateLayoutTransitionSuperBlock?) {
+    _ superBlock: AnimateLayoutTransitionSuperBlock?) {
     if let superBlock = superBlock {
       animateLayoutTransitionSuperBlockStack.append(superBlock)
     }
@@ -183,7 +183,7 @@ private final class ForwardingDisplayNode: ASDisplayNode {
   // MARK: Layuot Transition
 
   var animateLayoutTransitionBlock: ((_ context: ASContextTransitioning,
-                                      _ superBlock: AnimateLayoutTransitionSuperBlock?) -> Void)?
+    _ superBlock: AnimateLayoutTransitionSuperBlock?) -> Void)?
 
   override func animateLayoutTransition(_ context: ASContextTransitioning) {
     animateLayoutTransitionBlock?(context, super.animateLayoutTransition)

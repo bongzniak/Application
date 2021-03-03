@@ -18,7 +18,7 @@ class Post: NSObject, ModelType {
   }
 
   var id: String
-//  var user: User
+  var user: User
   var images: [String]
   var contents: String
 

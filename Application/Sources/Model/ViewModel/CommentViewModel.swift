@@ -14,7 +14,11 @@ class CommentViewModel: NSObject {
   var datetime: String
 
   init(
-    userID: String, userNickname: String, commentID: String, contents: String, datetime: String
+    userID: String,
+    userNickname: String,
+    commentID: String,
+    contents: String,
+    datetime: String
   ) {
     self.userID = userID
     self.userNickname = userNickname

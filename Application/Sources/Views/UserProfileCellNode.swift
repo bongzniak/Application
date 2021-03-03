@@ -7,10 +7,10 @@ import Pure
 import AsyncDisplayKit
 import BonMot
 
-final class PostUserProfileCellNode: BaseCellNode, FactoryModule, View {
+final class UserProfileCellNode: BaseCellNode, FactoryModule, View {
 
-  typealias Node = PostUserProfileCellNode
-  typealias Reactor = PostUserProfileCellReactor
+  typealias Node = UserProfileCellNode
+  typealias Reactor = UserProfileCellReactor
 
   // MARK: Dependency
 
@@ -49,7 +49,7 @@ final class PostUserProfileCellNode: BaseCellNode, FactoryModule, View {
 
   lazy var optionButtonNode = ASButtonNode().then {
     $0.setImage(UIImage(systemName: "ellipsis"), for: .normal)
-    $0.style.preferredSize = Metric.optionButtonNodeSize
+//    $0.style.preferredSize = Metric.optionButtonNodeSize
   }
 
   // MARK: Initializing
@@ -87,6 +87,7 @@ final class PostUserProfileCellNode: BaseCellNode, FactoryModule, View {
 
   override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
     let spec = wrapperLayoutSpec()
+    spec.style.width = ASDimension(unit: .points, value: UIScreen.main.bounds.width)
 
     return ASInsetLayoutSpec(
       insets: Metric.wrapperInset,
@@ -97,13 +98,11 @@ final class PostUserProfileCellNode: BaseCellNode, FactoryModule, View {
 
 // MARK : Layout Spec
 
-extension PostUserProfileCellNode {
+extension UserProfileCellNode {
 
   private func wrapperLayoutSpec() -> ASLayoutSpec {
 
-    profileImageNode.style.grow(0.f)
     nicknameTextNode.style.grow(1.f)
-    optionButtonNode.style.grow(1.f)
 
     return ASStackLayoutSpec(
       direction: .horizontal,

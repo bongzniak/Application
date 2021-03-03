@@ -16,7 +16,7 @@ import IGListKit
 import RxSwift
 import RxCocoa_Texture
 
-final class PostListBindingSectionController: ListBindingSectionController<Post>,
+final class PostListBindingSectionController: BaseListBindingSectionController,
   FactoryModule, View {
 
   typealias Node = PostListBindingSectionController
@@ -27,8 +27,8 @@ final class PostListBindingSectionController: ListBindingSectionController<Post>
   struct Dependency {
     let reactor: Reactor
     let postListViewCellNodeFactory: PostListViewCellNode.Factory
-    let postUserProfileCellNodeFactory: PostUserProfileCellNode.Factory
-    let postCommentProfileCellNodeFactory: PostCommentProfileCellNode.Factory
+    let postUserProfileCellNodeFactory: UserProfileCellNode.Factory
+    let postCommentProfileCellNodeFactory: CommentWithProfileCellNode.Factory
   }
 
   // MARK: Constants
@@ -37,19 +37,23 @@ final class PostListBindingSectionController: ListBindingSectionController<Post>
 
   var disposeBag = DisposeBag()
 
-  let postListViewCellNodeFactory: PostListViewCellNode.Factory
-  let postUserProfileCellNodeFactory: PostUserProfileCellNode.Factory
-  let postCommentProfileCellNodeFactory: PostCommentProfileCellNode.Factory
+  let dependency: Dependency
 
   // MARK: Node
 
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    defer { reactor = dependency.reactor }
-    postListViewCellNodeFactory = dependency.postListViewCellNodeFactory
-    postUserProfileCellNodeFactory = dependency.postUserProfileCellNodeFactory
-    postCommentProfileCellNodeFactory = dependency.postCommentProfileCellNodeFactory
+    defer {
+      reactor = dependency.reactor
+    }
+
+    self.dependency = Dependency(
+      reactor: dependency.reactor,
+      postListViewCellNodeFactory: dependency.postListViewCellNodeFactory,
+      postUserProfileCellNodeFactory: dependency.postUserProfileCellNodeFactory,
+      postCommentProfileCellNodeFactory: dependency.postCommentProfileCellNodeFactory
+    )
 
     super.init()
 
@@ -69,10 +73,8 @@ final class PostListBindingSectionController: ListBindingSectionController<Post>
 
 // MARK: - ListBindingSectionControllerDataSource, ASSectionController
 
-extension PostListBindingSectionController: ListBindingSectionControllerDataSource,
-  ASSectionController {
-
-  func sectionController(
+extension PostListBindingSectionController {
+  override func sectionController(
     _ sectionController: ListBindingSectionController<ListDiffable>,
     viewModelsFor object: Any
   ) -> [ListDiffable] {
@@ -86,110 +88,52 @@ extension PostListBindingSectionController: ListBindingSectionControllerDataSour
     formatter1.dateStyle = .short
     let id = formatter1.string(from: today)
 
+    var objects: [ListDiffable] = []
+    // swiftlint:disable line_length
     let user = UserViewModel(
       userID: id,
       profileUrl: "https://image.rocketpunch.com/company/24697/tryusncompany_logo_1559628600.png?s=100x100&t=inside",
       nickname: "bongzniak"
     )
-    let comment1 = CommentViewModel(
-      userID: "1: \(id)",
-      userNickname: "bongzniak-1",
-      commentID: "\(id)1",
-      contents: "contents",
-      datetime: "Today"
-    )
-    let comment2 = CommentViewModel(
-      userID: "2: \(id)",
-      userNickname: "bongzniak-2",
-      commentID: "\(id)2",
-      contents: "contents",
-      datetime: "Today"
-    )
+    // swiftlint:enable line_length
+    objects.append(user)
 
-    return [user, comment1, comment2]
-  }
-
-  func sectionController(
-    _ sectionController: ListBindingSectionController<ListDiffable>,
-    cellForViewModel viewModel: Any, at index: Int
-  ) -> UICollectionViewCell & ListBindable {
-    // swiftlint:disable force_cast
-    ASIGListSectionControllerMethods.cellForItem(
-      at: index,
-      sectionController: self
-    ) as! UICollectionViewCell & ListBindable
-    // swiftlint:enable force_cast
-  }
-
-  func sectionController(
-    _ sectionController: ListBindingSectionController<ListDiffable>,
-    sizeForViewModel viewModel: Any, at index: Int
-  ) -> CGSize {
-    ASIGListSectionControllerMethods.sizeForItem(at: index)
-  }
-
-  func nodeBlockForItem(at index: Int) -> ASCellNodeBlock {
-    { [weak self] in
-      guard let `self` = self else { return ASCellNode() }
-
-      return self.nodeForItem(at: index)
+    for index in 0...Int.random(in: 0...3) {
+      objects.append(
+        CommentViewModel(
+          userID: "1: \(id)",
+          userNickname: "bongzniak-\(index)",
+          commentID: "\(id)1",
+          contents: post.contents,
+          datetime: "Now"
+        )
+      )
     }
+
+    return objects
   }
 
-  func nodeForItem(at index: Int) -> ASCellNode {
+  override func nodeForItem(at index: Int) -> ASCellNode {
     if let user = viewModels[index] as? UserViewModel {
-      return postUserProfileCellNodeFactory.create(payload: .init(user: user))
-    }
-    if let comment = viewModels[index] as? CommentViewModel {
-      return postCommentProfileCellNodeFactory.create(payload: .init(comment: comment))
+      return dependency.postUserProfileCellNodeFactory.create(payload: .init(user: user))
+    } else if let comment = viewModels[index] as? CommentViewModel {
+      return dependency.postCommentProfileCellNodeFactory.create(payload: .init(comment: comment))
     }
 
     return ASCellNode()
   }
 }
 
-// MARK: - ListSupplementaryViewSource
+// MARK: - ListSupplementaryViewSource, ASSupplementaryNodeSource
 
-extension PostListBindingSectionController: ListSupplementaryViewSource,
-  ASSupplementaryNodeSource {
+extension PostListBindingSectionController {
 
-  func supportedElementKinds() -> [String] {
+  override func supportedElementKinds() -> [String] {
     [UICollectionView.elementKindSectionHeader]
   }
 
-  func viewForSupplementaryElement(
-    ofKind elementKind: String,
-    at index: Int
-  ) -> UICollectionReusableView {
-    ASIGListSupplementaryViewSourceMethods.viewForSupplementaryElement(
-      ofKind: elementKind,
-      at: index,
-      sectionController: self
-    )
-  }
-
-  func sizeForSupplementaryView(ofKind elementKind: String, at index: Int) -> CGSize {
-    ASIGListSupplementaryViewSourceMethods.sizeForSupplementaryView(
-      ofKind: elementKind,
-      at: index
-    )
-  }
-
-  func nodeBlockForSupplementaryElement(
-    ofKind elementKind: String,
-    at index: Int
-  ) -> ASCellNodeBlock {
-    { [weak self] in
-      guard let `self` = self else {
-        return ASCellNode()
-      }
-
-      return self.nodeForSupplementaryElement(ofKind: elementKind, at: index)
-    }
-  }
-
-  func nodeForSupplementaryElement(ofKind kind: String, at index: Int) -> ASCellNode {
-    guard var post = object
+  override func nodeForSupplementaryElement(ofKind kind: String, at index: Int) -> ASCellNode {
+    guard var _ = object
     else {
       return ASCellNode()
     }

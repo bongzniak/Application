@@ -8,7 +8,7 @@ import Pure
 import ReactorKit
 import RxSwift
 
-final class PostCommentProfileCellReactor: Reactor {
+final class CommentWithProfileCellReactor: Reactor {
 
   enum Action {
   }

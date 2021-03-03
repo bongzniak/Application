@@ -8,7 +8,7 @@ import Pure
 import ReactorKit
 import RxSwift
 
-final class PostUserProfileCellReactor: Reactor {
+final class UserProfileCellReactor: Reactor {
 
   enum Action {
   }
@@ -24,7 +24,6 @@ final class PostUserProfileCellReactor: Reactor {
   let initialState: State
 
   init(user: UserViewModel) {
-    log.info("user.profileUrl: \(user.profileUrl)")
     initialState = State(
       profileUrl: URL(string: user.profileUrl),
       nickname: user.nickname

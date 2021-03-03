@@ -8,10 +8,10 @@ import AsyncDisplayKit
 import BonMot
 import TextureSwiftSupport
 
-final class PostCommentProfileCellNode: BaseCellNode, FactoryModule, View {
+final class CommentWithProfileCellNode: BaseCellNode, FactoryModule, View {
 
-  typealias Node = PostCommentProfileCellNode
-  typealias Reactor = PostCommentProfileCellReactor
+  typealias Node = CommentWithProfileCellNode
+  typealias Reactor = CommentWithProfileCellReactor
 
   // MARK: Dependency
 
@@ -24,6 +24,12 @@ final class PostCommentProfileCellNode: BaseCellNode, FactoryModule, View {
   }
 
   // MARK: - Constants
+
+  enum Metric {
+    static let inset: UIEdgeInsets = .init(verticalInset: 10.f, horizontalInset: 16.f)
+    static let profileImageSize: CGSize = .init(width: 25.f, height: 25.f)
+    static let profileImageCornerRadius: CGFloat = 25.f / 2.f
+  }
 
   enum Image {
     static let unlike = UIImage(systemName: "suit.heart.fill")
@@ -40,9 +46,9 @@ final class PostCommentProfileCellNode: BaseCellNode, FactoryModule, View {
   // MARK: - Node
 
   lazy var profileImageNode = ASNetworkImageNode().then {
-    $0.style.preferredSize = .init(width: 30.f, height: 30.f)
     $0.backgroundColor = .red
-    $0.cornerRadius = 15.f
+    $0.style.preferredSize = Metric.profileImageSize
+    $0.cornerRadius = Metric.profileImageCornerRadius
     $0.clipsToBounds = true
     $0.style.flexShrink = 1.0
     $0.style.flexGrow = 0.0
@@ -77,14 +83,18 @@ final class PostCommentProfileCellNode: BaseCellNode, FactoryModule, View {
     reactor.state.map {
         $0.profileUrl
       }
-      .bind(to: profileImageNode.rx.url)
+      .bind(to: profileImageNode.rx.url, setNeedsLayout: self)
       .disposed(by: disposeBag)
 
     reactor.state.map {
-        NSMutableAttributedString()
+        let contents =
+          """
+          asdas
+          """
+        return NSMutableAttributedString()
           .append(attributeString: $0.nickname.styled(with: Attribute.nicknameAttributes))
           .append(attributeString: " ".styled(with: Attribute.contentsAttributes))
-          .append(attributeString: $0.contents.styled(with: Attribute.contentsAttributes))
+          .append(attributeString: contents.styled(with: Attribute.contentsAttributes))
       }
       .bind(to: nicknameNode.rx.attributedText, setNeedsLayout: self)
       .disposed(by: disposeBag)
@@ -93,35 +103,32 @@ final class PostCommentProfileCellNode: BaseCellNode, FactoryModule, View {
   // MARK: - Layout Spec
 
   override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
-    wrapperLayoutSpec()
+    let spec = wrapperLayoutSpec()
+    return ASInsetLayoutSpec(
+      insets: Metric.inset,
+      child: spec
+    )
   }
 }
 
 // MARK: - Layout Spec
 
-extension PostCommentProfileCellNode {
+extension CommentWithProfileCellNode {
 
   func wrapperLayoutSpec() -> ASLayoutSpec {
+
     let contentLayout = contentLayoutSpec()
 
     likeNode.setImage(Image.like, for: .normal)
-    let likeLayout = ASCenterLayoutSpec(child: likeNode).then {
-      $0.style.flexShrink = 1.0
-      $0.style.flexGrow = 0.0
-    }
+    let likeLayout = ASCenterLayoutSpec(child: likeNode)
 
-    let stackLayout = ASStackLayoutSpec(
+    return ASStackLayoutSpec(
       direction: .horizontal,
       spacing: 10.0,
-      justifyContent: .spaceBetween,
+      justifyContent: .start,
       alignItems: .stretch,
       children: [profileImageNode, contentLayout, likeLayout]
-    )
-
-    return ASInsetLayoutSpec(
-      insets: .init(verticalInset: 10.f, horizontalInset: 16.f),
-      child: stackLayout
-    )
+    ).setFitWidth()
   }
 
   func contentLayoutSpec() -> ASLayoutSpec {
@@ -132,8 +139,8 @@ extension PostCommentProfileCellNode {
     return ASStackLayoutSpec(
       direction: .vertical,
       spacing: 5.f,
-      justifyContent: .spaceBetween,
-      alignItems: .notSet,
+      justifyContent: .start,
+      alignItems: .stretch,
       children: elements
     ).then {
       $0.style.flexShrink = 1.0
@@ -146,7 +153,7 @@ extension PostCommentProfileCellNode {
       direction: .horizontal,
       spacing: 10.0,
       justifyContent: .start,
-      alignItems: .start,
+      alignItems: .stretch,
       children: [nicknameNode]
     )
   }

@@ -27,7 +27,6 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
 
   struct Dependency {
     let reactor: Reactor
-    let postListSectionControllerFactory: PostListSectionController.Factory
     let postListBindingSectionControllerFactory: PostListBindingSectionController.Factory
   }
 
@@ -35,9 +34,9 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
 
   // MARK: Properties
 
+  let dependency: Dependency
+
   var posts: [Post] = []
-  let postListSectionControllerFactory: PostListSectionController.Factory
-  let postListBindingSectionControllerFactory: PostListBindingSectionController.Factory
 
   // MARK: Node
 
@@ -46,19 +45,24 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
     $0.scrollDirection = .vertical
   }
   lazy var collectionNode = ASCollectionNode(collectionViewLayout: collectionViewFlowLayout).then {
-    $0.backgroundColor = .blue
     $0.style.flexGrow = 1.0
     $0.style.flexShrink = 1.0
   }
 
   let objectsSignal = BehaviorSubject<[PostListSection]>(value: [])
   lazy var dataSource = RxListAdapterDataSource<PostListSection>(
-    sectionControllerProvider: { [unowned self] (_, object) -> ListSectionController in
-    switch object {
-    case .post(let post):
-      return self.postListBindingSectionControllerFactory.create()
+    sectionControllerProvider: { [weak self] (_, object) -> ListSectionController in
+      guard let `self` = self
+      else {
+        return ListSectionController()
+      }
+
+      switch object {
+      case .post(let post):
+        return self.dependency.postListBindingSectionControllerFactory.create()
+      }
     }
-  })
+  )
 
   lazy var adapter: ListAdapter = {
     ListAdapter(updater: ListAdapterUpdater(), viewController: self)
@@ -70,8 +74,10 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
     defer {
       reactor = dependency.reactor
     }
-    postListSectionControllerFactory = dependency.postListSectionControllerFactory
-    postListBindingSectionControllerFactory = dependency.postListBindingSectionControllerFactory
+    self.dependency = Dependency(
+      reactor: dependency.reactor,
+      postListBindingSectionControllerFactory: dependency.postListBindingSectionControllerFactory
+    )
 
     super.init()
 
@@ -83,31 +89,57 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
     fatalError("init(coder:) has not been implemented")
   }
 
+  override func viewDidLoad() {
+    super.viewDidLoad()
+  }
+
   // MARK: Configuring
 
   func bind(reactor: Reactor) {
+
     // Action
     rx.viewDidLoad
-      .map { Reactor.Action.refresh }
+      .subscribe(onNext: { [weak self] in
+        self?.configureNavigationItem()
+      })
+      .disposed(by: disposeBag)
+
+
+    rx.viewDidLoad
+      .map {
+        Reactor.Action.refresh
+      }
       .bind(to: reactor.action)
       .disposed(by: self.disposeBag)
 
     refreshControl.rx.controlEvent(.valueChanged)
-      .map { Reactor.Action.refresh }
+      .map {
+        Reactor.Action.refresh
+      }
       .bind(to: reactor.action)
       .disposed(by: disposeBag)
 
     // State
-    reactor.state.map { $0.isRefreshing }
+    reactor.state.map {
+        $0.isRefreshing
+      }
       .distinctUntilChanged()
       .bind(to: refreshControl.rx.isRefreshing)
       .disposed(by: self.disposeBag)
+
+    reactor.state.map {
+        $0.isRefreshing
+      }
+      .bind(to: refreshControl.rx.isRefreshing)
+      .disposed(by: disposeBag)
 
     objectsSignal
       .bind(to: adapter.rx.objects(for: dataSource))
       .disposed(by: disposeBag)
 
-    reactor.state.map { $0.sections }
+    reactor.state.map {
+        $0.sections
+      }
       .subscribe { [weak self] sections in
         self?.objectsSignal.onNext(sections)
       }
@@ -131,6 +163,7 @@ extension PostListViewController {
     let calendarItem = UIBarButtonItem(image: UIImage(systemName: "calendar"))
     let bellItem = UIBarButtonItem(image: UIImage(systemName: "bell"))
     let personItem = UIBarButtonItem(image: UIImage(systemName: "person.circle"))
+
     navigationItem.rightBarButtonItems = [
       personItem, bellItem, calendarItem, envelopeItem
     ]
