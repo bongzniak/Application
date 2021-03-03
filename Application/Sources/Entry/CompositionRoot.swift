@@ -82,38 +82,11 @@ extension AppDependency {
       dependency: PostListSectionController.Dependency.init
     )
 
-    // PostListSectionController
-    container.register(PostListBindingSectionReactor.self) { _ in
-      PostListBindingSectionReactor()
-    }
-    container.autoregister(
-      PostListBindingSectionController.Factory.self,
-      dependency: PostListBindingSectionController.Dependency.init
-    )
-
     // PostListViewCell
     container.register(PostListViewCellNode.Factory.self) { _ in
       PostListViewCellNode.Factory(dependency: .init(
         reactorFactory: { (post: Post) -> PostListViewCellReactor in
           PostListViewCellReactor(post: post)
-        }
-      ))
-    }
-
-    // PostUserProfileCell
-    container.register(UserProfileCellNode.Factory.self) { _ in
-      UserProfileCellNode.Factory(dependency: .init(
-        reactorFactory: { (user: UserViewModel) -> UserProfileCellReactor in
-          UserProfileCellReactor(user: user)
-        }
-      ))
-    }
-
-    // PostCommentProfileCell
-    container.register(CommentWithProfileCellNode.Factory.self) { _ in
-      CommentWithProfileCellNode.Factory(dependency: .init(
-        reactorFactory: { (comment: CommentViewModel) -> CommentWithProfileCellReactor in
-          CommentWithProfileCellReactor(comment: comment)
         }
       ))
     }

@@ -21,22 +21,26 @@ final class PostListViewCellReactor: Reactor {
   }
 
   struct State {
+    var imageURL: URL?
     var title: String
     var contents: String
+    var commentCount: Int
+    var likeCount: Int
   }
 
   let initialState: State
 
   init(post: Post) {
     initialState = State(
-      title: post.id,
-      contents: post.contents
+      imageURL: URL(string: post.images.first ?? ""),
+      title: post.title,
+      contents: post.contents,
+      commentCount: post.commentCount,
+      likeCount: post.likeCount
     )
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
-    // switch action {
-    // }
   }
 
   func reduce(state: State, mutation: Mutation) -> State {

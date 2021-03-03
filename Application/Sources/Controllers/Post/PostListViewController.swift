@@ -27,7 +27,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
 
   struct Dependency {
     let reactor: Reactor
-    let postListBindingSectionControllerFactory: PostListBindingSectionController.Factory
+    let postListSectionControllerFactory: PostListSectionController.Factory
   }
 
   // MARK: Constants
@@ -59,7 +59,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
 
       switch object {
       case .post(let post):
-        return self.dependency.postListBindingSectionControllerFactory.create()
+        return self.dependency.postListSectionControllerFactory.create()
       }
     }
   )
@@ -76,7 +76,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
     }
     self.dependency = Dependency(
       reactor: dependency.reactor,
-      postListBindingSectionControllerFactory: dependency.postListBindingSectionControllerFactory
+      postListSectionControllerFactory: dependency.postListSectionControllerFactory
     )
 
     super.init()
@@ -88,6 +88,8 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
   required convenience init?(coder aDecoder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
+
+  // MARK: Life Cycle
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -104,7 +106,6 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
       })
       .disposed(by: disposeBag)
 
-
     rx.viewDidLoad
       .map {
         Reactor.Action.refresh
@@ -120,6 +121,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
       .disposed(by: disposeBag)
 
     // State
+
     reactor.state.map {
         $0.isRefreshing
       }
@@ -156,16 +158,13 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
 extension PostListViewController {
   // NavigationItem setting
   private func configureNavigationItem() {
-    let searchItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"))
-    navigationItem.leftBarButtonItem = searchItem
+    navigationItem.leftBarButtonItem = nil
 
-    let envelopeItem = UIBarButtonItem(image: UIImage(systemName: "envelope.open"))
-    let calendarItem = UIBarButtonItem(image: UIImage(systemName: "calendar"))
+    let envelopeItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"))
+    let calendarItem = UIBarButtonItem(image: UIImage(systemName: "slider.vertical.3"))
     let bellItem = UIBarButtonItem(image: UIImage(systemName: "bell"))
-    let personItem = UIBarButtonItem(image: UIImage(systemName: "person.circle"))
-
     navigationItem.rightBarButtonItems = [
-      personItem, bellItem, calendarItem, envelopeItem
+      bellItem, calendarItem, envelopeItem
     ]
   }
 }
