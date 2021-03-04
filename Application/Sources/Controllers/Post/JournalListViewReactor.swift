@@ -10,7 +10,7 @@ import Foundation
 import ReactorKit
 import RxSwift
 
-final class PostListViewReactor: Reactor {
+final class JournalListViewReactor: Reactor {
 
   enum Action {
     case refresh
@@ -18,8 +18,8 @@ final class PostListViewReactor: Reactor {
   }
 
   enum Mutation {
-    case setPosts([Post])
-    case appendPosts([Post])
+    case setBeers([Beer])
+    case appendBeers([Beer])
     case setLoading(Bool)
   }
 
@@ -27,15 +27,15 @@ final class PostListViewReactor: Reactor {
     var isRefreshing: Bool = false
     var isLoading: Bool = false
     var page: Int = 0
-    var sections: [PostListSection] = []
+    var sections: [JournalListSection] = []
   }
 
   let initialState = State()
 
-  let postService: PostServiceType
+  let journalService: JournalServiceType
 
-  init(postService: PostServiceType) {
-    self.postService = postService
+  init(journalService: JournalServiceType) {
+    self.journalService = journalService
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
@@ -44,18 +44,18 @@ final class PostListViewReactor: Reactor {
 
     switch action {
     case .refresh:
-       let setPosts = postService.posts(page: 0, size: 0)
+       let setPosts = journalService.journals(page: 0, size: 0)
          .asObservable()
-         .map { posts -> Mutation in
-           .setPosts(posts)
+         .map { beers -> Mutation in
+           .setBeers(beers)
          }
       return .concat([startLoading, setPosts, endLoading])
 
     case let .next(page):
-      let appendPosts = postService.posts(page: page, size: 0)
+      let appendPosts = journalService.journals(page: page, size: 0)
         .asObservable()
-        .map { posts -> Mutation in
-          .appendPosts(posts)
+        .map { beers -> Mutation in
+          .appendBeers(beers)
         }
       return .concat([startLoading, appendPosts, endLoading])
     }
@@ -66,10 +66,10 @@ final class PostListViewReactor: Reactor {
     switch mutation {
     case let .setLoading(isLoading):
       state.isLoading = isLoading
-    case let .setPosts(posts):
-      state.sections = posts.map { PostListSection.post($0) }
-    case let .appendPosts(posts):
-      let appendSections = posts.map { PostListSection.post($0) }
+    case let .setBeers(beers):
+      state.sections = beers.map { JournalListSection.post($0) }
+    case let .appendBeers(beers):
+      let appendSections = beers.map { JournalListSection.post($0) }
       state.sections.append(contentsOf: appendSections)
     }
     return state

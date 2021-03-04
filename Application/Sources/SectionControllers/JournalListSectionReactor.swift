@@ -10,7 +10,7 @@ import Foundation
 import ReactorKit
 import RxSwift
 
-final class PostListSectionReactor: Reactor {
+final class JournalListSectionReactor: Reactor {
 
   enum Action {
   }

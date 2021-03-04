@@ -16,29 +16,31 @@ import RxSwift
 import RxCocoa_Texture
 import URLNavigator
 
-final class PostListSectionController: BaseASListSectionController<Post>, FactoryModule, View {
+final class JournalListSectionController: BaseASListSectionController<Beer>, FactoryModule, View {
 
-  typealias Node = PostListSectionController
-  typealias Reactor = PostListSectionReactor
+  typealias Node = JournalListSectionController
+  typealias Reactor = JournalListSectionReactor
 
   // MARK: Dependency
 
   struct Dependency {
-    let postListViewCellNodeFactory: PostListViewCellNode.Factory
+    let journalListViewCellNodeFactory: JournalListViewCellNode.Factory
   }
 
   // MARK: Constants
 
   // MARK: Properties
 
-  let postListViewCellNodeFactory: PostListViewCellNode.Factory
+  let dependency: Dependency
 
   // MARK: Node
 
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    postListViewCellNodeFactory = dependency.postListViewCellNodeFactory
+    self.dependency = Dependency(
+      journalListViewCellNodeFactory: dependency.journalListViewCellNodeFactory
+    )
 
     super.init()
 
@@ -51,24 +53,24 @@ final class PostListSectionController: BaseASListSectionController<Post>, Factor
 
   // MARK: Configuring
 
-  func bind(reactor: PostListSectionReactor) {
+  func bind(reactor: JournalListSectionReactor) {
   }
 
   // MARK: ASSectionController
 
   override func nodeForItem(at index: Int) -> ASCellNode {
-    guard let post = object, post is Post
+    guard let post = object, post is Beer
     else {
       return ASCellNode()
     }
 
-    return postListViewCellNodeFactory.create(payload: .init(post: post))
+    return dependency.journalListViewCellNodeFactory.create(payload: .init(beer: post))
   }
 }
 
 // MARK: - ListSupplementaryViewSource
 
-extension PostListSectionController: ListSupplementaryViewSource, ASSupplementaryNodeSource {
+extension JournalListSectionController: ListSupplementaryViewSource, ASSupplementaryNodeSource {
 
   func supportedElementKinds() -> [String] {
     [UICollectionView.elementKindSectionHeader, UICollectionView.elementKindSectionFooter]
@@ -111,7 +113,7 @@ extension PostListSectionController: ListSupplementaryViewSource, ASSupplementar
       return ASCellNode()
     }
 
-    post.contents = "asdasdasdasdasd"
-    return postListViewCellNodeFactory.create(payload: .init(post: post))
+    post.opinion = "asdasdasdasdasd"
+    return dependency.journalListViewCellNodeFactory.create(payload: .init(beer: post))
   }
 }

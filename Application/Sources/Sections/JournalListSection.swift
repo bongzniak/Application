@@ -7,11 +7,11 @@ import RxSwift
 import RxIGListKit
 import IGListKit
 
-enum PostListSection {
-  case post(Post)
+enum JournalListSection {
+  case post(Beer)
 }
 
-extension PostListSection: SectionModelType {
+extension JournalListSection: SectionModelType {
   typealias ObjectType = ListDiffable
   var object: ListDiffable {
     switch self {

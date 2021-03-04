@@ -47,7 +47,7 @@ extension AppDependency {
     // Append AuthPlugin plgunin
     plugins.append(AuthPlugin(authService: authService))
     networking = Networking(plugins: plugins)
-    let postService = PostService(networking: networking)
+    let journalService = JournalService(networking: networking)
 
     // Splash
     container.register(SplashViewReactor.self) { _ in
@@ -68,25 +68,25 @@ extension AppDependency {
     )
 
     // Post
-    container.register(PostListViewReactor.self) { _ in
-      PostListViewReactor(postService: postService)
+    container.register(JournalListViewReactor.self) { _ in
+      JournalListViewReactor(journalService: journalService)
     }
     container.autoregister(
-      PostListViewController.Factory.self,
-      dependency: PostListViewController.Dependency.init
+      JournalListViewController.Factory.self,
+      dependency: JournalListViewController.Dependency.init
     )
 
     // PostListSectionController
     container.autoregister(
-      PostListSectionController.Factory.self,
-      dependency: PostListSectionController.Dependency.init
+      JournalListSectionController.Factory.self,
+      dependency: JournalListSectionController.Dependency.init
     )
 
     // PostListViewCell
-    container.register(PostListViewCellNode.Factory.self) { _ in
-      PostListViewCellNode.Factory(dependency: .init(
-        reactorFactory: { (post: Post) -> PostListViewCellReactor in
-          PostListViewCellReactor(post: post)
+    container.register(JournalListViewCellNode.Factory.self) { _ in
+      JournalListViewCellNode.Factory(dependency: .init(
+        reactorFactory: { (beer: Beer) -> JournalListViewCellReactor in
+          JournalListViewCellReactor(beer: beer)
         }
       ))
     }

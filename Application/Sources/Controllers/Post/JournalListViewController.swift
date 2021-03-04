@@ -18,16 +18,16 @@ import URLNavigator
 import IGListKit
 import RxIGListKit
 
-final class PostListViewController: BaseViewController, FactoryModule, View {
+final class JournalListViewController: BaseViewController, FactoryModule, View {
 
-  typealias Node = PostListViewController
-  typealias Reactor = PostListViewReactor
+  typealias Node = JournalListViewController
+  typealias Reactor = JournalListViewReactor
 
   // MARK: Dependency
 
   struct Dependency {
     let reactor: Reactor
-    let postListSectionControllerFactory: PostListSectionController.Factory
+    let postListSectionControllerFactory: JournalListSectionController.Factory
   }
 
   // MARK: Constants
@@ -36,7 +36,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
 
   let dependency: Dependency
 
-  var posts: [Post] = []
+  var posts: [Beer] = []
 
   // MARK: Node
 
@@ -49,8 +49,8 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
     $0.style.flexShrink = 1.0
   }
 
-  let objectsSignal = BehaviorSubject<[PostListSection]>(value: [])
-  lazy var dataSource = RxListAdapterDataSource<PostListSection>(
+  let objectsSignal = BehaviorSubject<[JournalListSection]>(value: [])
+  lazy var dataSource = RxListAdapterDataSource<JournalListSection>(
     sectionControllerProvider: { [weak self] (_, object) -> ListSectionController in
       guard let `self` = self
       else {
@@ -155,7 +155,7 @@ final class PostListViewController: BaseViewController, FactoryModule, View {
   }
 }
 
-extension PostListViewController {
+extension JournalListViewController {
   // NavigationItem setting
   private func configureNavigationItem() {
     navigationItem.leftBarButtonItem = nil
@@ -171,7 +171,7 @@ extension PostListViewController {
 
 // MARK: - ASCollectionDataSource
 
-extension PostListViewController: ASCollectionDelegate {
+extension JournalListViewController: ASCollectionDelegate {
   func collectionNode(_ collectionNode: ASCollectionNode, willDisplayItemWith node: ASCellNode) {
     log.info("willDisplayItemWith")
   }

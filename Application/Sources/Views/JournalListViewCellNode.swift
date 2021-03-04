@@ -1,5 +1,5 @@
 //
-//  PostListViewCellNode.swift
+//  JournalListViewCellNode.swift
 //  Application
 //
 //  Created by bongzniak on 2021/02/28.
@@ -17,28 +17,29 @@ import RxCocoa_Texture
 import TextureSwiftSupport
 import BonMot
 
-final class PostListViewCellNode: BaseCellNode, FactoryModule, View {
+final class JournalListViewCellNode: BaseCellNode, FactoryModule, View {
 
-  typealias Node = PostListViewCellNode
-  typealias Reactor = PostListViewCellReactor
+  typealias Node = JournalListViewCellNode
+  typealias Reactor = JournalListViewCellReactor
 
   // MARK: Dependency
 
   struct Dependency {
-    let reactorFactory: (_ post: Post) -> PostListViewCellReactor
+    let reactorFactory: (_ beer: Beer) -> JournalListViewCellReactor
   }
 
   struct Payload {
-    let post: Post
+    let beer: Beer
   }
 
   // MARK: Constants
 
   enum Metric {
     static let wrapperInset: UIEdgeInsets = .init(verticalInset: 10.f, horizontalInset: 16.f)
-    static let cellMinHeight = 80.f
+    static let cellMinHeight = 100.f
     static let spacing = 4.f
-    static let imageSize: CGSize = .init(width: 80.f, height: 80.f)
+    static let imageSize: CGSize = .init(width: 100.f, height: 100.f)
+    static let informationImageSize: CGSize = .init(width: 25.f, height: 25.f)
     static let imageCornerRadius = 5.f
     static let imageAfterSpacing = 16.f
   }
@@ -47,7 +48,7 @@ final class PostListViewCellNode: BaseCellNode, FactoryModule, View {
     static var titleAttributes = StringStyle(
       .font(UIFont.boldSystemFont(ofSize: 16.f))
     ).attributes
-    static var contentsAttributes = StringStyle(
+    static var opinionAttributes = StringStyle(
       .font(UIFont.systemFont(ofSize: 12.f))
     ).attributes
   }
@@ -79,11 +80,19 @@ final class PostListViewCellNode: BaseCellNode, FactoryModule, View {
     $0.style.preferredSize = Metric.imageSize
     $0.style.shrink(0.f).grow(0.f)
   }
-  lazy var titleNode = BaseASTextNode().then {
+  lazy var nameNode = BaseASTextNode().then {
+    $0.maximumNumberOfLines = 1
+  }
+  lazy var opinionNode = BaseASTextNode().then {
     $0.maximumNumberOfLines = 2
   }
-  lazy var contentsNode = BaseASTextNode().then {
-    $0.maximumNumberOfLines = 1
+  lazy var beerTypeImageNode = ASNetworkImageNode().then {
+    $0.contentMode = .scaleAspectFill
+    $0.style.preferredSize = Metric.informationImageSize
+  }
+  lazy var beerGlassImageNode = ASNetworkImageNode().then {
+    $0.contentMode = .scaleAspectFill
+    $0.style.preferredSize = Metric.informationImageSize
   }
   var informationNodes: [ImageWithTextNode] = []
 
@@ -91,7 +100,7 @@ final class PostListViewCellNode: BaseCellNode, FactoryModule, View {
 
   init(dependency: Dependency, payload: Payload) {
     defer {
-      reactor = dependency.reactorFactory(payload.post)
+      reactor = dependency.reactorFactory(payload.beer)
     }
 
     super.init()
@@ -104,40 +113,39 @@ final class PostListViewCellNode: BaseCellNode, FactoryModule, View {
   // MARK: Configuring
 
   func bind(reactor: Reactor) {
-
-    reactor.state.map {
-        [(Image.commentImage, $0.commentCount),
-         (Image.likeImage, $0.likeCount)].filter { $0.1 > 0 }
-      }
-      .subscribe(onNext: { [weak self] items in
-        for item in items {
-          let node = ImageWithTextNode(image: item.0, text: "\(item.1)")
-          self?.informationNodes.append(node)
-        }
-      })
-      .disposed(by: disposeBag)
-
     reactor.state
       .map {
-        $0.imageURL
+        URL(string: $0.beer.images.first ?? "")
       }
       .bind(to: imageNode.rx.url, setNeedsLayout: self)
       .disposed(by: disposeBag)
 
     reactor.state
       .map {
-        $0.title
+        $0.beer.name
       }
-      .bind(to: titleNode.rx.text(Attribute.titleAttributes),
-            setNeedsLayout: self)
+      .bind(to: nameNode.rx.text(Attribute.titleAttributes), setNeedsLayout: self)
       .disposed(by: disposeBag)
 
     reactor.state
       .map {
-        $0.contents
+        $0.beer.opinion
       }
-      .bind(to: contentsNode.rx.text(Attribute.contentsAttributes),
-            setNeedsLayout: self)
+      .bind(to: opinionNode.rx.text(Attribute.opinionAttributes), setNeedsLayout: self)
+      .disposed(by: disposeBag)
+
+    reactor.state
+      .map {
+        URL(string: $0.beer.type.imageURL)
+      }
+      .bind(to: beerTypeImageNode.rx.url, setNeedsLayout: self)
+      .disposed(by: disposeBag)
+
+    reactor.state
+      .map {
+        URL(string: $0.beer.glass.imageURL)
+      }
+      .bind(to: beerGlassImageNode.rx.url, setNeedsLayout: self)
       .disposed(by: disposeBag)
   }
 
@@ -151,13 +159,13 @@ final class PostListViewCellNode: BaseCellNode, FactoryModule, View {
 
 // MARK: Layout Spec
 
-extension PostListViewCellNode {
+extension JournalListViewCellNode {
   func wrapperLayoutSpec() -> ASLayoutSpec {
     let contentsAndInformationLayout = contentsAndInformationLayoutSpec()
 
     var element: [ASLayoutElement] = [contentsAndInformationLayout]
 
-    if let _ = imageNode.url {
+    if imageNode.url != nil {
       element.insert(imageNode, at: 0)
     }
 
@@ -167,7 +175,7 @@ extension PostListViewCellNode {
       justifyContent: .start,
       alignItems: .stretch,
       children: element
-    ).then{
+    ).then {
       $0.style.minHeight = ASDimension(unit: .points, value: Metric.cellMinHeight)
     }
   }
@@ -193,17 +201,20 @@ extension PostListViewCellNode {
       spacing: Metric.spacing,
       justifyContent: .start,
       alignItems: .stretch,
-      children: [titleNode, contentsNode]
+      children: [nameNode, opinionNode]
     )
   }
 
   func informationLayoutSpec() -> ASLayoutSpec {
+    var elements: [ASLayoutElement] = [beerTypeImageNode, beerGlassImageNode]
+      .filter { $0.url != nil }
+
     return ASStackLayoutSpec(
       direction: .horizontal,
       spacing: Metric.spacing,
       justifyContent: .start,
       alignItems: .center,
-      children: informationNodes
+      children: elements
     )
   }
 }

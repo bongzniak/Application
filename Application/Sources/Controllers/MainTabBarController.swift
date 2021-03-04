@@ -24,7 +24,7 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
 
   struct Dependency {
     let reactor: MainTabBarViewReactor
-    let postListViewControllerFactory: PostListViewController.Factory
+    let postListViewControllerFactory: JournalListViewController.Factory
   }
 
   // MARK: Constants
@@ -36,7 +36,7 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
   // MARK: Properties
 
   var disposeBag = DisposeBag()
-  let postListViewControllerFactory: PostListViewController.Factory
+  let postListViewControllerFactory: JournalListViewController.Factory
 
   // MARK: Initializing
 
