@@ -44,10 +44,10 @@ extension AppDependency {
     let authService = AuthService(networking: networking)
     let appStoreService = AppStoreService(networking: networking)
 
-    // append plgunin
+    // Append AuthPlugin plgunin
     plugins.append(AuthPlugin(authService: authService))
     networking = Networking(plugins: plugins)
-
+    let journalService = JournalService(networking: networking)
 
     // Splash
     container.register(SplashViewReactor.self) { _ in
@@ -67,6 +67,30 @@ extension AppDependency {
       dependency: LoginViewController.Dependency.init
     )
 
+    // Post
+    container.register(JournalListViewReactor.self) { _ in
+      JournalListViewReactor(journalService: journalService)
+    }
+    container.autoregister(
+      JournalListViewController.Factory.self,
+      dependency: JournalListViewController.Dependency.init
+    )
+
+    // PostListSectionController
+    container.autoregister(
+      JournalListSectionController.Factory.self,
+      dependency: JournalListSectionController.Dependency.init
+    )
+
+    // PostListViewCell
+    container.register(JournalListViewCellNode.Factory.self) { _ in
+      JournalListViewCellNode.Factory(dependency: .init(
+        reactorFactory: { (beer: Beer) -> JournalListViewCellReactor in
+          JournalListViewCellReactor(beer: beer)
+        }
+      ))
+    }
+
     // MainTabBarController
     container.register(MainTabBarViewReactor.self) { _ in
       MainTabBarViewReactor()
@@ -84,17 +108,16 @@ extension AppDependency {
       navigator: navigator,
       configureSDKs: configureSDKs,
       configureAppearance: configureAppearance,
-      openURL: self.openURLFactory(navigator: navigator)
+      openURL: openURLFactory(navigator: navigator)
     )
   }
 
   static func configureWindow() -> UIWindow {
-    let window = UIWindow(frame: UIScreen.main.bounds)
-    window.frame = UIScreen.main.bounds
-    window.backgroundColor = .black
-    window.makeKeyAndVisible()
-
-    return window
+    UIWindow(frame: UIScreen.main.bounds).then {
+      $0.frame = UIScreen.main.bounds
+      $0.backgroundColor = .black
+      $0.makeKeyAndVisible()
+    }
   }
 
   static func configureSDKs() {
@@ -102,15 +125,12 @@ extension AppDependency {
   }
 
   static func configureAppearance() {
-    let navigationBarBackgroundImage = UIImage.resizable().color(UIColor.black).image
-//    let navigationBarBackgroundImage = UIImage.resizable().color(.db_charcoal).image
+    let navigationBarBackgroundImage = UIImage.resizable().color(0x333333.color).image
     UINavigationBar.appearance().setBackgroundImage(navigationBarBackgroundImage, for: .default)
     UINavigationBar.appearance().shadowImage = UIImage()
     UINavigationBar.appearance().barStyle = .black
-//    UINavigationBar.appearance().tintColor = .db_slate
-//    UITabBar.appearance().tintColor = .db_charcoal
-    UINavigationBar.appearance().tintColor = UIColor.red
-    UITabBar.appearance().tintColor = UIColor.red
+    UINavigationBar.appearance().tintColor = 0x9DA3A5.color
+    UITabBar.appearance().tintColor = 0x333333.color
   }
 
   static func openURLFactory(navigator: NavigatorType) -> AppDependency.OpenURLHandler {

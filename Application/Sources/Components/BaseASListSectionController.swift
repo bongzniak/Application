@@ -4,12 +4,19 @@
 
 import AsyncDisplayKit
 import IGListKit
+import RxSwift
 
 class BaseASListSectionController<T>: ListSectionController, ASSectionController {
 
   // MARK: - ListSectionController
 
   var object: T?
+
+  // MARK: - Rx
+
+  var disposeBag = DisposeBag()
+
+  // MARK: Initializing
 
   override init() {
     super.init()

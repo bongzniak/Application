@@ -30,4 +30,11 @@ extension ASLayoutElementStyle {
     flexGrow = 0.0
     return self
   }
+
+  @discardableResult
+  func shrinkAndGrow(_ scale: CGFloat) -> ASLayoutElementStyle {
+    flexShrink = scale
+    flexGrow = scale
+    return self
+  }
 }

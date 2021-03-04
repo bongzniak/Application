@@ -11,7 +11,7 @@ import ReactorKit
 import RxSwift
 import FBSDKLoginKit
 
-class LoginViewReactor: Reactor {
+final class LoginViewReactor: Reactor {
 
   enum Action {
     case facebookLogin(viewController: UIViewController)

@@ -29,11 +29,26 @@ class BaseViewController: ASViewController<ASDisplayNode> {
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = .background
+    configureNavigationItem()
   }
 
   // MARK: Rx
 
   var disposeBag = DisposeBag()
+
+  // MARK: Navigation
+
+  private func configureNavigationItem() {
+    let backItem = UIBarButtonItem(image: UIImage(systemName: "chevron.backward")).then {
+      $0.target = self
+      $0.action = #selector(navigationBackNodeDidTap)
+    }
+    navigationItem.leftBarButtonItem = backItem
+  }
+
+  @objc private func navigationBackNodeDidTap() {
+    navigationController?.popViewController(animated: true)
+  }
 
   // MARK: Forwarding
 
@@ -103,7 +118,7 @@ class BaseViewController: ASViewController<ASDisplayNode> {
   private var animateLayoutTransitionSuperBlockStack: [AnimateLayoutTransitionSuperBlock] = []
 
   private func animateLayoutTransition(_ context: ASContextTransitioning,
-                                       _ superBlock: AnimateLayoutTransitionSuperBlock?) {
+    _ superBlock: AnimateLayoutTransitionSuperBlock?) {
     if let superBlock = superBlock {
       animateLayoutTransitionSuperBlockStack.append(superBlock)
     }
@@ -168,7 +183,7 @@ private final class ForwardingDisplayNode: ASDisplayNode {
   // MARK: Layuot Transition
 
   var animateLayoutTransitionBlock: ((_ context: ASContextTransitioning,
-                                      _ superBlock: AnimateLayoutTransitionSuperBlock?) -> Void)?
+    _ superBlock: AnimateLayoutTransitionSuperBlock?) -> Void)?
 
   override func animateLayoutTransition(_ context: ASContextTransitioning) {
     animateLayoutTransitionBlock?(context, super.animateLayoutTransition)
