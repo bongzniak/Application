@@ -113,6 +113,21 @@ final class JournalListViewCellNode: BaseCellNode, FactoryModule, View {
   // MARK: Configuring
 
   func bind(reactor: Reactor) {
+
+    reactor.state
+      .map {
+        [(Image.commentImage, $0.beer.commentCount), (Image.likeImage, $0.beer.likeCount)]
+          .filter {
+          $0.1 > 0
+        }
+      }
+      .subscribe(onNext: { [weak self] in
+        self?.informationNodes = $0.map {
+          ImageWithTextNode(image: $0.0, text: "\($0.1)")
+        }
+      })
+      .disposed(by: disposeBag)
+
     reactor.state
       .map {
         URL(string: $0.beer.images.first ?? "")
@@ -207,13 +222,24 @@ extension JournalListViewCellNode {
 
   func informationLayoutSpec() -> ASLayoutSpec {
     var elements: [ASLayoutElement] = [beerTypeImageNode, beerGlassImageNode]
-      .filter { $0.url != nil }
+      .filter {
+      $0.url != nil
+    }
+
+    let space = ASLayoutSpec().then {
+      $0.style.shrinkAndGrow(1.f)
+    }
+    elements.append(space)
+
+    if informationNodes.isNotEmpty {
+      elements.append(contentsOf: informationNodes)
+    }
 
     return ASStackLayoutSpec(
       direction: .horizontal,
       spacing: Metric.spacing,
       justifyContent: .start,
-      alignItems: .center,
+      alignItems: .baselineLast,
       children: elements
     )
   }
