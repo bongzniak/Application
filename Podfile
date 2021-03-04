@@ -29,20 +29,22 @@ target 'Application' do
   pod 'RxCocoa'
   pod 'RxCocoa-Texture'
   pod 'RxRelay'
-  pod 'RxDataSources'
+  # pod 'RxDataSources'
   pod 'RxDataSources-Texture'
+  # pod 'RxCodable'
   pod 'RxOptional'
-  pod 'RxCodable'
   pod 'RxViewController'
   pod 'RxKeyboard'
 
   # UI
   pod 'Texture/IGListKit'
+  pod 'TextureSwiftSupport'
   pod 'RxIGListKit'
   pod 'BonMot'
   pod 'SwiftyColor'
   pod 'SwiftyImage'
-  pod 'SkeletonView'
+  # pod 'SkeletonView'
+  # pod 'SnapKit'
 
   # Logging
   pod 'CocoaLumberjack/Swift'

@@ -11,8 +11,8 @@ import RxSwift
 
 struct TabBarItem {
   let title: String
+  let image: UIImage?
   let viewController: UIViewController
-  let image: UIImage
 }
 
 final class MainTabBarController: UITabBarController, View, FactoryModule {
@@ -24,6 +24,7 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
 
   struct Dependency {
     let reactor: MainTabBarViewReactor
+    let postListViewControllerFactory: JournalListViewController.Factory
   }
 
   // MARK: Constants
@@ -35,37 +36,19 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
   // MARK: Properties
 
   var disposeBag = DisposeBag()
+  let postListViewControllerFactory: JournalListViewController.Factory
 
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    defer { reactor = dependency.reactor }
+    defer {
+      reactor = dependency.reactor
+    }
+    postListViewControllerFactory = dependency.postListViewControllerFactory
 
     super.init(nibName: nil, bundle: nil)
 
-    let viewController = UIViewController().then {
-      $0.view.backgroundColor = .blue
-    }
 
-    let postItem = TabBarItem(title: "Temp",
-                              viewController: viewController,
-                              image: UIImage())
-
-    let tabBarItems = [postItem]
-
-    viewControllers = tabBarItems.map { tabBarItem -> UINavigationController in
-      let navigationController = UINavigationController(
-        rootViewController: tabBarItem.viewController
-      )
-      navigationController.isNavigationBarHidden = true
-      navigationController.tabBarItem.title = tabBarItem.title
-      navigationController.tabBarItem.image = tabBarItem.image
-      navigationController.tabBarItem.imageInsets.top = 5
-      navigationController.tabBarItem.imageInsets.bottom = -5
-      return navigationController
-    }
-
-    view.backgroundColor = .red
   }
 
   required convenience init?(coder aDecoder: NSCoder) {
@@ -75,34 +58,54 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
   // MARK: View Life Cycle
   override func viewDidLoad() {
     super.viewDidLoad()
-  }
 
-  override func viewDidLayoutSubviews() {
-    super.viewDidLayoutSubviews()
-
-//    if #available(iOS 11.0, *) {
-//      self.tabBar.height = Metric.tabBarHeight + self.view.safeAreaInsets.bottom
-//    } else {
-//      self.tabBar.height = Metric.tabBarHeight
-//    }
+    configureViewControllers()
   }
 
   // MARK: Configuring
 
   func bind(reactor: MainTabBarViewReactor) {
     rx.didSelect
-        .scan((nil, nil)) { state, viewController in (state.1, viewController) }
-        // if select the view controller first time or select the same view controller again
-        .filter { state in state.0 == nil || state.0 === state.1 }
-        .map { state in state.1 }
-        .filterNil()
-        .subscribe(onNext: { [weak self] viewController in
-          self?.scrollToTop(viewController) // scroll to top
-        })
-        .disposed(by: disposeBag)
+      .scan((nil, nil)) { state, viewController in
+        (state.1, viewController)
+      }
+      // if select the view controller first time or select the same view controller again
+      .filter { state in
+        state.0 == nil || state.0 === state.1
+      }
+      .map { state in
+        state.1
+      }
+      .filterNil()
+      .subscribe(onNext: { [weak self] viewController in
+        self?.scrollToTop(viewController) // scroll to top
+      })
+      .disposed(by: disposeBag)
   }
 
-  func scrollToTop(_ viewController: UIViewController) {
+  private func configureViewControllers() {
+    let postTabbarItem = TabBarItem(
+      title: "Post",
+      image: UIImage(systemName: "house"),
+      viewController: postListViewControllerFactory.create()
+    )
+
+    let tabBarItems = [postTabbarItem]
+    viewControllers = tabBarItems.map { tabBarItem -> UINavigationController in
+      UINavigationController(rootViewController: tabBarItem.viewController).then {
+//        $0.navigationBar.prefersLargeTitles = true
+//        $0.isNavigationBarHidden = true
+        $0.tabBarItem.title = tabBarItem.title
+        $0.tabBarItem.image = tabBarItem.image
+        $0.tabBarItem.imageInsets.top = 5
+        $0.tabBarItem.imageInsets.bottom = -5
+      }
+    }
+  }
+
+  // MARK: - Private func
+
+  private func scrollToTop(_ viewController: UIViewController) {
     if let navigationController = viewController as? UINavigationController {
       let topViewController = navigationController.topViewController
       let firstViewController = navigationController.viewControllers.first
@@ -111,9 +114,14 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
       }
       return
     }
-    guard let scrollView = viewController.view.subviews.first as? UIScrollView else {
+    guard let scrollView = viewController.view.subviews.first as? UIScrollView
+    else {
       return
     }
     scrollView.setContentOffset(.zero, animated: true)
   }
+}
+
+extension MainTabBarController {
+
 }

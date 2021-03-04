@@ -6,7 +6,6 @@ import MoyaSugar
 
 enum PostAPI {
   case posts(page: Int, size: Int)
-  case post(id: String)
 }
 
 extension PostAPI: SugarTargetType {
@@ -18,8 +17,6 @@ extension PostAPI: SugarTargetType {
     switch self {
     case .posts:
       return .get("posts")
-    case let .post(id):
-      return .get("post/\(id)")
     }
   }
 
