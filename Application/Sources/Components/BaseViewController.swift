@@ -28,6 +28,8 @@ class BaseViewController: ASViewController<ASDisplayNode> {
 
   override func viewDidLoad() {
     super.viewDidLoad()
+
+    hidesBottomBarWhenPushed = true
     view.backgroundColor = .background
     configureNavigationItem()
   }
@@ -83,7 +85,7 @@ class BaseViewController: ASViewController<ASDisplayNode> {
 
   private func forwardLayoutTransition() {
     forwardingNode.animateLayoutTransitionBlock = { [weak self] context, superBlock in
-      self?.animateLayoutTransition(context, superBlock)
+      self?.animateLayoutTransition(context, superBlock: superBlock)
     }
   }
 
@@ -117,8 +119,10 @@ class BaseViewController: ASViewController<ASDisplayNode> {
 
   private var animateLayoutTransitionSuperBlockStack: [AnimateLayoutTransitionSuperBlock] = []
 
-  private func animateLayoutTransition(_ context: ASContextTransitioning,
-    _ superBlock: AnimateLayoutTransitionSuperBlock?) {
+  private func animateLayoutTransition(
+    _ context: ASContextTransitioning,
+    superBlock: AnimateLayoutTransitionSuperBlock?
+  ) {
     if let superBlock = superBlock {
       animateLayoutTransitionSuperBlockStack.append(superBlock)
     }
