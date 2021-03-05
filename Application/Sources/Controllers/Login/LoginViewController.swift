@@ -12,6 +12,7 @@ import UIKit
 import Pure
 import ReactorKit
 import AsyncDisplayKit
+import TextureSwiftSupport
 import RxSwift
 import RxCocoa_Texture
 import Then
@@ -127,12 +128,10 @@ extension LoginViewController {
       button.style.height = buttonDimention
     }
 
-    return ASStackLayoutSpec(
-      direction: .vertical,
-      spacing: Metric.buttonLayoutSpecSpacing,
-      justifyContent: .end,
-      alignItems: .stretch,
-      children: buttons
-    )
+    return LayoutSpec {
+      VStackLayout(spacing: Metric.buttonLayoutSpecSpacing, justifyContent: .end) {
+        buttons
+      }
+    }
   }
 }
