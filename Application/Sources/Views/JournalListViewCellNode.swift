@@ -17,7 +17,7 @@ import RxCocoa_Texture
 import TextureSwiftSupport
 import BonMot
 
-final class JournalListViewCellNode: BaseCellNode, FactoryModule, View {
+final class JournalListViewCellNode: BaseASCellNode, FactoryModule, View {
 
   typealias Node = JournalListViewCellNode
   typealias Reactor = JournalListViewCellReactor
@@ -94,7 +94,7 @@ final class JournalListViewCellNode: BaseCellNode, FactoryModule, View {
     $0.contentMode = .scaleAspectFill
     $0.style.preferredSize = Metric.informationImageSize
   }
-  var informationNodes: [ImageWithTextNode] = []
+  var informationNodes: [ASImageWithTextNode] = []
 
   // MARK: Initializing
 
@@ -123,7 +123,10 @@ final class JournalListViewCellNode: BaseCellNode, FactoryModule, View {
       }
       .subscribe(onNext: { [weak self] in
         self?.informationNodes = $0.map {
-          ImageWithTextNode(image: $0.0, text: "\($0.1)")
+          ASImageWithTextNode(
+            image: $0.0,
+            text: "\($0.1)"
+          )
         }
       })
       .disposed(by: disposeBag)
@@ -132,115 +135,134 @@ final class JournalListViewCellNode: BaseCellNode, FactoryModule, View {
       .map {
         URL(string: $0.beer.images.first ?? "")
       }
-      .bind(to: imageNode.rx.url, setNeedsLayout: self)
+      .bind(to: imageNode.rx.url,
+            setNeedsLayout: self)
       .disposed(by: disposeBag)
 
     reactor.state
       .map {
         $0.beer.name
       }
-      .bind(to: nameNode.rx.text(Attribute.titleAttributes), setNeedsLayout: self)
+      .bind(to: nameNode.rx.text(Attribute.titleAttributes),
+            setNeedsLayout: self)
       .disposed(by: disposeBag)
 
     reactor.state
       .map {
         $0.beer.opinion
       }
-      .bind(to: opinionNode.rx.text(Attribute.opinionAttributes), setNeedsLayout: self)
+      .bind(to: opinionNode.rx.text(Attribute.opinionAttributes),
+            setNeedsLayout: self)
       .disposed(by: disposeBag)
 
     reactor.state
       .map {
-        URL(string: $0.beer.type.imageURL)
+        URL(string: $0.beer.type.imageURLString)
       }
-      .bind(to: beerTypeImageNode.rx.url, setNeedsLayout: self)
+      .bind(to: beerTypeImageNode.rx.url,
+            setNeedsLayout: self)
       .disposed(by: disposeBag)
 
     reactor.state
       .map {
-        URL(string: $0.beer.glass.imageURL)
+        URL(string: $0.beer.glass.imageURLString)
       }
-      .bind(to: beerGlassImageNode.rx.url, setNeedsLayout: self)
+      .bind(to: beerGlassImageNode.rx.url,
+            setNeedsLayout: self)
       .disposed(by: disposeBag)
   }
 
   // MARK: Layout Spec
 
   override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
-    let layout = wrapperLayoutSpec().setFitWidth()
-    return ASInsetLayoutSpec(insets: Metric.wrapperInset, child: layout)
+    let node = makeWrapperNode()
+
+    return LayoutSpec {
+      InsetLayout(insets: Metric.wrapperInset) {
+        node
+      }
+    }
   }
 }
 
 // MARK: Layout Spec
 
 extension JournalListViewCellNode {
-  func wrapperLayoutSpec() -> ASLayoutSpec {
-    let contentsAndInformationLayout = contentsAndInformationLayoutSpec()
+  func makeWrapperNode() -> ASDisplayNode {
+    let contentsAndInformationNode = makeContentsAndInformationNode()
 
-    var element: [ASLayoutElement] = [contentsAndInformationLayout]
+    var element = [contentsAndInformationNode]
 
     if imageNode.url != nil {
       element.insert(imageNode, at: 0)
     }
 
-    return ASStackLayoutSpec(
-      direction: .horizontal,
-      spacing: Metric.imageAfterSpacing,
-      justifyContent: .start,
-      alignItems: .stretch,
-      children: element
-    ).then {
-      $0.style.minHeight = ASDimension(unit: .points, value: Metric.cellMinHeight)
+    return AnyDisplayNode { _, _ in
+      LayoutSpec {
+        HStackLayout(spacing: Metric.imageAfterSpacing) {
+          element
+        }.minSize(Metric.imageSize)
+      }
     }
   }
 
-  func contentsAndInformationLayoutSpec() -> ASLayoutSpec {
-    let contentsLayout = contentsLayoutSpec()
-    let informationLayout = informationLayoutSpec()
+  func makeContentsAndInformationNode() -> ASDisplayNode {
+    let contentsNode = makeContentsNode(elements: [nameNode, opinionNode]).then {
+      $0.style.shrinkAndGrow(1.f)
+    }
+    let informationNode = makeInformationNode()
 
-    return ASStackLayoutSpec(
-      direction: .vertical,
-      spacing: Metric.spacing,
-      justifyContent: .spaceBetween,
-      alignItems: .stretch,
-      children: [contentsLayout, informationLayout]
-    ).then {
-      $0.style.shrink(1.0).grow(1.0)
+    return AnyDisplayNode { _, _ in
+      LayoutSpec {
+        VStackLayout(spacing: Metric.spacing, justifyContent: .spaceBetween) {
+          contentsNode
+          informationNode
+        }
+      }
+    }.then {
+      $0.style.shrinkAndGrow(1.f)
     }
   }
 
-  func contentsLayoutSpec() -> ASLayoutSpec {
-    ASStackLayoutSpec(
-      direction: .vertical,
-      spacing: Metric.spacing,
-      justifyContent: .start,
-      alignItems: .stretch,
-      children: [nameNode, opinionNode]
-    )
+  func makeContentsNode(elements: [ASDisplayNode]) -> ASDisplayNode {
+    AnyDisplayNode { _, _ in
+      LayoutSpec {
+        VStackLayout(spacing: Metric.spacing) {
+          elements
+        }
+      }
+    }
   }
 
-  func informationLayoutSpec() -> ASLayoutSpec {
-    var elements: [ASLayoutElement] = [beerTypeImageNode, beerGlassImageNode]
+  func makeInformationNode() -> ASDisplayNode {
+    var nodes: [ASDisplayNode] = [beerTypeImageNode, beerGlassImageNode]
       .filter {
       $0.url != nil
     }
 
-    let space = ASLayoutSpec().then {
-      $0.style.shrinkAndGrow(1.f)
-    }
-    elements.append(space)
+    let spaceNode = makeSpaceNode()
+    nodes.append(spaceNode)
 
     if informationNodes.isNotEmpty {
-      elements.append(contentsOf: informationNodes)
+      nodes.append(contentsOf: informationNodes)
     }
 
-    return ASStackLayoutSpec(
-      direction: .horizontal,
-      spacing: Metric.spacing,
-      justifyContent: .start,
-      alignItems: .baselineLast,
-      children: elements
-    )
+    return AnyDisplayNode { _, _ in
+      LayoutSpec {
+        HStackLayout(spacing: Metric.spacing, alignItems: .baselineLast) {
+          nodes
+        }
+      }
+    }
+  }
+
+  func makeSpaceNode() -> ASDisplayNode {
+    AnyDisplayNode { _, _ in
+      LayoutSpec {
+        HSpacerLayout()
+      }
+    }.then {
+      $0.style.shrinkAndGrow(1.f)
+    }
   }
 }
