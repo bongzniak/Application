@@ -5,7 +5,7 @@
 import RxSwift
 import AsyncDisplayKit
 
-class BaseCellNode: ASCellNode {
+class BaseASCellNode: ASCellNode {
 
   var disposeBag = DisposeBag()
 

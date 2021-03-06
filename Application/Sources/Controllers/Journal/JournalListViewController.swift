@@ -93,6 +93,8 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
 
   override func viewDidLoad() {
     super.viewDidLoad()
+
+    hidesBottomBarWhenPushed = false
   }
 
   // MARK: Configuring

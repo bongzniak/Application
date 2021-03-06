@@ -31,7 +31,7 @@ extension AppDependency {
     // Navigator
     let navigator = Navigator()
     NavigationMap.initialize(navigator: navigator, container: container)
-    container.register(Navigator.self) { _ in navigator }
+    container.register(NavigatorType.self) { _ in navigator }
 
     // Analytics
     let analytics = MyAppAnalytics()
@@ -67,7 +67,7 @@ extension AppDependency {
       dependency: LoginViewController.Dependency.init
     )
 
-    // Post
+    // JournalListView
     container.register(JournalListViewReactor.self) { _ in
       JournalListViewReactor(journalService: journalService)
     }
@@ -75,6 +75,15 @@ extension AppDependency {
       JournalListViewController.Factory.self,
       dependency: JournalListViewController.Dependency.init
     )
+
+    // JournalView
+    container.register(JournalViewController.Factory.self) { _ in
+      JournalViewController.Factory(dependency: .init(
+        reactorFactory: { (beerID: String) -> JournalViewReactor in
+          JournalViewReactor(beerID: beerID, journalService: journalService)
+        }
+      ))
+    }
 
     // PostListSectionController
     container.autoregister(
