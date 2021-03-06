@@ -240,12 +240,12 @@ extension JournalListViewCellNode {
       $0.url != nil
     }
 
-    let spaceNode = makeSpaceNode()
-    nodes.append(spaceNode)
-
-    if informationNodes.isNotEmpty {
-      nodes.append(contentsOf: informationNodes)
-    }
+//    let spaceNode = makeSpaceNode()
+//    nodes.append(spaceNode)
+//
+//    if informationNodes.isNotEmpty {
+//      nodes.append(contentsOf: informationNodes)
+//    }
 
     return AnyDisplayNode { _, _ in
       LayoutSpec {
