@@ -342,7 +342,7 @@ extension JournalViewController {
 
   private func maekABUNode() -> ASDisplayNode {
     AnyDisplayNode { [weak self] _, _ in
-      guard let `self` = self, self.reactor?.currentState.beer?.abv
+      guard let `self` = self, self.reactor?.currentState.beer?.abv != nil
       else {
         return LayoutSpec {
         }
