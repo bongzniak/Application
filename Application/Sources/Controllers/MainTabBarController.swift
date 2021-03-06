@@ -95,6 +95,7 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
       UINavigationController(rootViewController: tabBarItem.viewController).then {
 //        $0.navigationBar.prefersLargeTitles = true
 //        $0.isNavigationBarHidden = true
+//        $0.hidesBottomBarWhenPushed = false
         $0.tabBarItem.title = tabBarItem.title
         $0.tabBarItem.image = tabBarItem.image
         $0.tabBarItem.imageInsets.top = 5
@@ -104,6 +105,16 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
   }
 
   // MARK: - Private func
+
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+//    if #available(iOS 11.0, *) {
+//      self.tabBar.height = Metric.tabBarHeight + self.view.safeAreaInsets.bottom
+//    } else {
+//      self.tabBar.height = Metric.tabBarHeight
+//    }
+//    self.tabBar.bottom = self.view.height
+  }
 
   private func scrollToTop(_ viewController: UIViewController) {
     if let navigationController = viewController as? UINavigationController {

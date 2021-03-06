@@ -12,20 +12,20 @@ enum GroupCode: String {
 }
 
 class Code: NSObject, ModelType {
-  enum Event{
+  enum Event {
   }
 
   var id: String
   var text: String
   var information: String
-  var imageURL: String
+  var imageURLString: String
   var order: Int
 
-  init(id: String, text: String, information: String, imageURL: String, order: Int) {
+  init(id: String, text: String, information: String, imageURLString: String, order: Int) {
     self.id = id
     self.text = text
     self.information = information
-    self.imageURL = imageURL
+    self.imageURLString = imageURLString
     self.order = order
   }
 
@@ -33,7 +33,7 @@ class Code: NSObject, ModelType {
     case id
     case text
     case information
-    case imageURL
+    case imageURLString = "imageURL"
     case order
   }
 }

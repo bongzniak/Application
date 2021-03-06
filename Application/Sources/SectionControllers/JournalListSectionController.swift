@@ -24,13 +24,14 @@ final class JournalListSectionController: BaseASListSectionController<Beer>, Fac
   // MARK: Dependency
 
   struct Dependency {
+    let navigator: NavigatorType
+    let journalViewControllerFactory: JournalViewController.Factory
     let journalListViewCellNodeFactory: JournalListViewCellNode.Factory
   }
 
   // MARK: Constants
 
   // MARK: Properties
-
   let dependency: Dependency
 
   // MARK: Node
@@ -39,8 +40,11 @@ final class JournalListSectionController: BaseASListSectionController<Beer>, Fac
 
   init(dependency: Dependency, payload: Payload) {
     self.dependency = Dependency(
+      navigator: dependency.navigator,
+      journalViewControllerFactory: dependency.journalViewControllerFactory,
       journalListViewCellNodeFactory: dependency.journalListViewCellNodeFactory
     )
+
 
     super.init()
 
@@ -59,12 +63,27 @@ final class JournalListSectionController: BaseASListSectionController<Beer>, Fac
   // MARK: ASSectionController
 
   override func nodeForItem(at index: Int) -> ASCellNode {
-    guard let post = object, post is Beer
+    guard let beer = object, beer is Beer
     else {
       return ASCellNode()
     }
 
-    return dependency.journalListViewCellNodeFactory.create(payload: .init(beer: post))
+    return dependency.journalListViewCellNodeFactory.create(payload: .init(beer: beer))
+  }
+
+  override func didSelectItem(at index: Int) {
+    super.didSelectItem(at: index)
+
+    guard let post = object, post is Beer
+    else {
+      return
+    }
+
+    let viewController = dependency.journalViewControllerFactory.create(
+      payload: .init(beerID: post.id)
+    )
+    viewController.hidesBottomBarWhenPushed = true
+    dependency.navigator.push(viewController)
   }
 }
 
