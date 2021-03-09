@@ -21,13 +21,14 @@ final class JournalService: JournalServiceType {
   }
 
   func journals(page: Int, size: Int) -> Single<[Beer]> {
-//    networking.request(PostAPI.posts(page: page, size: size)).map([Post].self)
-
-    let posts: [Beer] = [Beer(), Beer(), Beer(), Beer(), Beer()]
-    return .just(posts)
+    EntryLoader.loadLatest()
+    return .just(EntryLoader.beers)
   }
 
   func journal(id: String) -> Single<Beer> {
-    .just(Beer())
+    if let beer = EntryLoader.beers.filter({ $0.id == id }).first {
+      return .just(beer)
+    }
+    return .just(Beer(id: "999999"))
   }
 }

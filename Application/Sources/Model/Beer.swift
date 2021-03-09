@@ -6,9 +6,6 @@ import Foundation
 
 class Beer: NSObject, ModelType {
   enum Event {
-    case updateLiked(id: Int, isLiked: Bool)
-    case increaseLikeCount(id: Int)
-    case decreaseLikeCount(id: Int)
   }
 
   var id: String
@@ -37,7 +34,7 @@ class Beer: NSObject, ModelType {
 
   var createdAt: Date?
 
-  override init() {
+  init(id: String) {
 
     // swiftlint:disable line_length
     let userData = User(
@@ -45,47 +42,43 @@ class Beer: NSObject, ModelType {
       nickname: "bognzniak",
       profileUrl: "http://img.khan.co.kr/news/2016/07/19/l_2016072001002644100209491.jpg"
     )
+
     let imagesData: [String] = [
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLWofy6RiEc6st6AEkSuhxGt1-eZhEDzmifw&usqp=CAU",
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLWofy6RiEc6st6AEkSuhxGt1-eZhEDzmifw&usqp=CAU",
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLWofy6RiEc6st6AEkSuhxGt1-eZhEDzmifw&usqp=CAU"
+      "https://postfiles.pstatic.net/20160630_75/reviewtouch_1467267169422Ekhou_JPEG/%B8%C6%C1%D6%C1%BE%B7%F9_%2817%29.jpg?type=w966",
+      "https://postfiles.pstatic.net/20160630_164/reviewtouch_1467267169641JFLnM_JPEG/%B8%C6%C1%D6%C1%BE%B7%F9_%2811%29.jpg?type=w966",
+      "https://postfiles.pstatic.net/20160630_284/reviewtouch_1467267169973uYitn_JPEG/%B8%C6%C1%D6%C1%BE%B7%F9_%2827%29.jpg?type=w966",
+      "https://postfiles.pstatic.net/20160630_3/reviewtouch_1467267170139p4jwx_JPEG/%B8%C6%C1%D6%C1%BE%B7%F9_%2815%29.jpg?type=w966",
+      "https://postfiles.pstatic.net/20160630_187/reviewtouch_1467267170397aY24E_JPEG/%B8%C6%C1%D6%C1%BE%B7%F9_%2841%29.jpg?type=w966",
+      "https://postfiles.pstatic.net/20160630_141/reviewtouch_1467267170561xtEM6_JPEG/%B8%C6%C1%D6%C1%BE%B7%F9_%2813%29.jpg?type=w966",
+      "https://postfiles.pstatic.net/20160630_203/reviewtouch_1467267170733UssG1_JPEG/%B8%C6%C1%D6%C1%BE%B7%F9_%2830%29.jpg?type=w966"
     ]
-    let beerKindCode = Code(
-      id: "1",
-      text: "벨기에 필스너",
-      information: "독일이나 체코의 필스너와 달리 약간 드라이하고 쌉쌀하면서도 가벼운 산미가 있는 것이 특징이다.",
-      imageURLString: "",
-      order: 1
-    )
-    let beerTypeCode = Code(
-      id: "1",
-      text: "Draft",
-      information: "",
-      imageURLString: "https://cdn1.iconfinder.com/data/icons/minimal-brewery/256/minimal_brewery_3-256.png",
-      order: 1
-    )
-    let nationCode = Code(
-      id: "1",
-      text: "미국",
-      information: "",
-      imageURLString: "https://emojigraph.org/media/apple/flag-united-states_1f1fa-1f1f8.png",
-      order: 1
-    )
-    let beerGlassCode = Code(
-      id: "1",
-      text: "Draft",
-      information: "",
-      imageURLString: "https://findicons.com/files/icons/2770/ios_7_icons/128/beer_glass.png",
-      order: 1
-    )
-    id = "1"
+    let namesData: [String] = [
+      "밀러 제뉴인 드래프트",
+      "프란치스카너 헤페바이스",
+      "볼비어 라거",
+      "보딩턴스 펍 에일",
+      "웨팅어 헤페바이스",
+      "스파텐 뮌헨",
+      "스텔라 아르투아"
+    ]
+
+    let randomIndex = Int.random(in: 0...namesData.count-1)
+    let randomRating = round(Float.random(in: 0.0...5.0) * 10.0) / 10.0
+    let randomABU = round(Float.random(in: 3.0...9.5) * 10.0) / 10.0
+
+    let beerKindCode = EntryLoader.getRandomBeerKindCode()
+    let beerTypeCode = EntryLoader.getRandomBeerTypeCode()
+    let nationCode = EntryLoader.getRandomNationCode()
+    let beerGlassCode = EntryLoader.getRandomBeerGlassCode()
+
+    self.id = id
     user = userData
-    images = imagesData
-    name = "스텔라 아르투아"
+    images = [imagesData[randomIndex]]
+    name = namesData[randomIndex]
     kind = beerKindCode
     type = beerTypeCode
     nation = nationCode
-    abv = 4.2
+    abv = randomABU
     glass = beerGlassCode
     let contents =
       """
@@ -95,9 +88,7 @@ class Beer: NSObject, ModelType {
     nose = "nose - \(contents)"
     taste = "taste - \(contents)"
     opinion = "opinion - \(contents)"
-    rating = 3.5
-    commentCount = 1
-    likeCount = 2
+    rating = randomRating
     // swiftlint:enable line_length
   }
 

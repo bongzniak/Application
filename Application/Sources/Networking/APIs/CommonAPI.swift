@@ -7,7 +7,7 @@ import Foundation
 import MoyaSugar
 
 enum CommonAPI {
-  case code(groupCode: GroupCode)
+  case code(groupCode: GroupCodeType)
 }
 
 extension CommonAPI: SugarTargetType {
@@ -25,7 +25,7 @@ extension CommonAPI: SugarTargetType {
   var parameters: Parameters? {
     switch self {
     case let .code(groupCode):
-      return ["groupCode": groupCode]
+      return ["groupCode": groupCode.rawValue]
     default:
       return [:]
     }

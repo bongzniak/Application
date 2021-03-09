@@ -5,7 +5,8 @@
 import Foundation
 
 class User: NSObject, ModelType {
-  enum Event { }
+  enum Event {
+  }
 
   var id: String
   var nickname: String
