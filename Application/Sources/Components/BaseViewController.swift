@@ -3,6 +3,12 @@ import RxSwift
 
 class BaseViewController: ASViewController<ASDisplayNode> {
 
+  // MARK: Properties
+
+  lazy private(set) var className: String = {
+    type(of: self).description().components(separatedBy: ".").last ?? ""
+  }()
+
   // MARK: Initializing
 
   init() {
@@ -17,6 +23,10 @@ class BaseViewController: ASViewController<ASDisplayNode> {
 
   required convenience init?(coder aDecoder: NSCoder) {
     self.init()
+  }
+
+  deinit {
+    log.info("DEINIT: \(className)")
   }
 
   private func configureNode() {
@@ -40,16 +50,33 @@ class BaseViewController: ASViewController<ASDisplayNode> {
 
   // MARK: Navigation
 
-  private func configureNavigationItem() {
-    let backItem = UIBarButtonItem(image: UIImage(systemName: "chevron.backward")).then {
-      $0.target = self
-      $0.action = #selector(navigationBackNodeDidTap)
+  func configureNavigationItem() {
+    navigationItem.largeTitleDisplayMode = .never
+
+    if navigationController?.viewControllers.count ?? 0 > 1 { // pushed
+      navigationItem.leftBarButtonItem = nil
+    } else if navigationController?.viewControllers.count ?? 0 == 0 { // pushed
+      navigationItem.leftBarButtonItem = UIBarButtonItem(
+        image: UIImage(systemName: "chevron.backward")
+      ).then {
+        $0.target = self
+        $0.action = #selector(navigationBackNodeDidTap)
+      }
+    } else if presentingViewController != nil { // presented
+      navigationItem.leftBarButtonItem = UIBarButtonItem(
+        barButtonSystemItem: .cancel,
+        target: self,
+        action: #selector(navigationCloseNodeDidTap)
+      )
     }
-    navigationItem.leftBarButtonItem = backItem
   }
 
   @objc private func navigationBackNodeDidTap() {
     navigationController?.popViewController(animated: true)
+  }
+
+  @objc private func navigationCloseNodeDidTap() {
+    navigationController?.dismiss(animated: true)
   }
 
   // MARK: Forwarding

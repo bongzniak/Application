@@ -16,8 +16,8 @@ class ASImageWithTextNode: ASDisplayNode {
     static let spacing = 4.f
   }
 
-  fileprivate enum Attribute {
-    static let textAttribute = StringStyle(
+  fileprivate enum Style {
+    static let text = StringStyle(
       .font(UIFont.systemFont(ofSize: 12.f))
     )
   }

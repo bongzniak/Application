@@ -85,6 +85,15 @@ extension AppDependency {
       ))
     }
 
+    // JournalModifyView
+    container.register(JournalModifyViewController.Factory.self) { _ in
+      JournalModifyViewController.Factory(dependency: .init(
+        reactorFactory: { (id: String?) -> JournalModifyViewReactor in
+          JournalModifyViewReactor(id: id, service: journalService)
+        }
+      ))
+    }
+
     // PostListSectionController
     container.autoregister(
       JournalListSectionController.Factory.self,
@@ -134,12 +143,15 @@ extension AppDependency {
   }
 
   static func configureAppearance() {
-    let navigationBarBackgroundImage = UIImage.resizable().color(0x333333.color).image
+    let navigationBarBackgroundImage = UIImage.resizable().color(.gray).image
     UINavigationBar.appearance().setBackgroundImage(navigationBarBackgroundImage, for: .default)
     UINavigationBar.appearance().shadowImage = UIImage()
     UINavigationBar.appearance().barStyle = .black
     UINavigationBar.appearance().tintColor = 0x9DA3A5.color
-    UITabBar.appearance().tintColor = 0x333333.color
+    UINavigationBar.appearance().largeTitleTextAttributes = [
+      NSAttributedString.Key.foregroundColor: UIColor.gray
+    ]
+    // UITabBar.appearance().tintColor = 0xffffff.color
   }
 
   static func openURLFactory(navigator: NavigatorType) -> AppDependency.OpenURLHandler {

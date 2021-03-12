@@ -29,7 +29,7 @@ final class CommonService: CommonServiceType {
     case .beerGlass:
       return .just(EntryLoader.beerGlassCodes.codes)
     case .nation:
-      return .just(EntryLoader.nation.codes)
+      return .just(EntryLoader.nationCodes.codes)
     }
   }
 }

@@ -24,8 +24,6 @@ extension PostAPI: SugarTargetType {
     switch self {
     case let .posts(page, size):
       return ["page": page, "size": size]
-    default:
-      return [:]
     }
   }
 

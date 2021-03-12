@@ -14,6 +14,7 @@ import ReactorKit
 import AsyncDisplayKit
 import RxSwift
 import RxCocoa_Texture
+import TextureSwiftSupport
 import URLNavigator
 import IGListKit
 import RxIGListKit
@@ -26,11 +27,22 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
   // MARK: Dependency
 
   struct Dependency {
+    let navigator: NavigatorType
     let reactor: Reactor
+    let journalModifyViewControllerFactory: JournalModifyViewController.Factory
     let postListSectionControllerFactory: JournalListSectionController.Factory
   }
 
   // MARK: Constants
+
+  enum Metric {
+    static let buttonSize: CGSize = .init(width: 60.f, height: 60.f)
+    static let buttonCornerRadius: CGFloat = 30.f
+  }
+
+  enum Image {
+    static let buttonImage = UIImage.init(systemName: "note.text.badge.plus")
+  }
 
   // MARK: Properties
 
@@ -47,6 +59,13 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
   lazy var collectionNode = ASCollectionNode(collectionViewLayout: collectionViewFlowLayout).then {
     $0.style.flexGrow = 1.0
     $0.style.flexShrink = 1.0
+  }
+  lazy var buttonNode = ASButtonNode().then {
+    $0.style.preferredSize = Metric.buttonSize
+    $0.setImage(Image.buttonImage, for: .normal)
+    $0.cornerRadius = Metric.buttonCornerRadius
+    $0.clipsToBounds = true
+    $0.backgroundColor = .gray
   }
 
   let objectsSignal = BehaviorSubject<[JournalListSection]>(value: [])
@@ -75,7 +94,9 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
       reactor = dependency.reactor
     }
     self.dependency = Dependency(
+      navigator: dependency.navigator,
       reactor: dependency.reactor,
+      journalModifyViewControllerFactory: dependency.journalModifyViewControllerFactory,
       postListSectionControllerFactory: dependency.postListSectionControllerFactory
     )
 
@@ -95,6 +116,7 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
     super.viewDidLoad()
 
     hidesBottomBarWhenPushed = false
+    configureNavigationItem()
   }
 
   // MARK: Configuring
@@ -102,11 +124,6 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
   func bind(reactor: Reactor) {
 
     // Action
-    rx.viewDidLoad
-      .subscribe(onNext: { [weak self] in
-        self?.configureNavigationItem()
-      })
-      .disposed(by: disposeBag)
 
     rx.viewDidLoad
       .map {
@@ -121,6 +138,12 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
       }
       .bind(to: reactor.action)
       .disposed(by: disposeBag)
+
+    buttonNode.rx.tap
+    .bind(onNext: { [weak self] in
+      self?.buttonNodeDidTap()
+    })
+    .disposed(by: disposeBag)
 
     // State
 
@@ -150,31 +173,52 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
       .disposed(by: disposeBag)
   }
 
+  override func configureNavigationItem() {
+    super.configureNavigationItem()
+
+    title = "Beer"
+    navigationItem.largeTitleDisplayMode = .always
+    navigationItem.leftBarButtonItem = nil
+  }
+
   // MARK: Layout Spec
 
   override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
-    ASWrapperLayoutSpec(layoutElement: collectionNode)
+    LayoutSpec {
+      VStackLayout {
+        [collectionNode]
+      }
+      RelativeLayout(horizontalPosition: .end, verticalPosition: .end) {
+        InsetLayout(insets: self.view.safeAreaInsets) {
+          buttonNode
+        }
+        .padding([.right, .bottom], 16.f)
+      }
+    }
   }
 }
+
+// MARK: Action Event
 
 extension JournalListViewController {
-  // NavigationItem setting
-  private func configureNavigationItem() {
-    navigationItem.leftBarButtonItem = nil
-
-    let envelopeItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"))
-    let calendarItem = UIBarButtonItem(image: UIImage(systemName: "slider.vertical.3"))
-    let bellItem = UIBarButtonItem(image: UIImage(systemName: "bell"))
-    navigationItem.rightBarButtonItems = [
-      bellItem, calendarItem, envelopeItem
-    ]
+  func buttonNodeDidTap() {
+    let vc = dependency.journalModifyViewControllerFactory.create(payload: .init(id: nil))
+    let navigation = UINavigationController(rootViewController: vc)
+    navigation.modalPresentationStyle = .fullScreen
+    dependency.navigator.present(navigation)
   }
 }
 
-// MARK: - ASCollectionDataSource
+// MARK: Layout Spec
 
-extension JournalListViewController: ASCollectionDelegate {
-  func collectionNode(_ collectionNode: ASCollectionNode, willDisplayItemWith node: ASCellNode) {
-    log.info("willDisplayItemWith")
+extension JournalListViewController {
+  private func makeWriteButtonNode() -> AnyDisplayNode {
+    AnyDisplayNode { [unowned self] _, _ in
+      LayoutSpec {
+        RelativeLayout(horizontalPosition: .end, verticalPosition: .end) {
+          buttonNode
+        }
+      }
+    }
   }
 }

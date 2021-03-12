@@ -41,28 +41,28 @@ final class JournalViewController: BaseViewController, FactoryModule, View {
     static let abuSize: CGSize = .init(width: 40.f, height: 40.f)
   }
 
-  enum AttributeStyle {
-    static let nameStyle = StringStyle(
+  enum Style {
+    static let name = StringStyle(
       .font(UIFont.boldSystemFont(ofSize: 24.f))
     )
-    static let descriptionStyle = StringStyle(
+    static let description = StringStyle(
       .font(UIFont.systemFont(ofSize: 17.f))
     )
-    static let beerKindStyle = StringStyle(
+    static let beerKind = StringStyle(
       .font(UIFont.systemFont(ofSize: Metric.informationFontSize))
     )
-    static let abuTitleStyle = StringStyle(
+    static let abuTitle = StringStyle(
       .font(UIFont.boldSystemFont(ofSize: 10.f)),
       .color(.white)
     )
-    static let abuStyle = StringStyle(
+    static let abu = StringStyle(
       .font(UIFont.boldSystemFont(ofSize: Metric.informationFontSize)),
       .color(.white)
     )
-    static let suggestTitleStyle = StringStyle(
+    static let suggestTitle = StringStyle(
       .font(UIFont.boldSystemFont(ofSize: 16.f))
     )
-    static let suggestStyle = StringStyle(
+    static let suggest = StringStyle(
       .font(UIFont.boldSystemFont(ofSize: 24.f))
     )
   }
@@ -86,7 +86,6 @@ final class JournalViewController: BaseViewController, FactoryModule, View {
   }
   lazy var ratingNode = BaseASTextNode()
 
-  var apperanceNode: TitleWithDescriptionNode?
   var noseNode: TitleWithDescriptionNode?
   var tasteNode: TitleWithDescriptionNode?
   var opinionNode: TitleWithDescriptionNode?
@@ -113,13 +112,7 @@ final class JournalViewController: BaseViewController, FactoryModule, View {
     scrollNode.layoutSpecBlock = { _, _ -> ASLayoutSpec in
       var nodes: [AnyDisplayNode] = []
 
-      let nameNode = AnyDisplayNode { _, _ in
-        LayoutSpec {
-          InsetLayout(insets: .init(horizontalInset: 16.f)) {
-            self.nameTextNode
-          }
-        }
-      }
+      let nameNode = self.makeNameNode()
       nodes.append(nameNode)
 
       let informationNode = self.makeInformationNode().then {
@@ -127,11 +120,15 @@ final class JournalViewController: BaseViewController, FactoryModule, View {
       }
       nodes.append(informationNode)
 
-      let suggestNode = self.makeSuggestNode()
+      let suggestNode = self.makeSuggestNode().then {
+        $0.style.spacingBefore = 26.f
+      }
       nodes.append(suggestNode)
 
-      let imageNode = self.makeImagesNode()
-      nodes.append(imageNode)
+      let imagesNode = self.makeImagesNode().then {
+        $0.style.spacingBefore = 16.f
+      }
+      nodes.append(imagesNode)
 
       let contentsNode = self.makeContentsNode().then {
         $0.style.spacingBefore = 36.f
@@ -164,7 +161,7 @@ final class JournalViewController: BaseViewController, FactoryModule, View {
       .map {
         $0.beer?.name
       }
-      .bind(to: nameTextNode.rx.text(AttributeStyle.nameStyle.attributes),
+      .bind(to: nameTextNode.rx.text(Style.name.attributes),
             setNeedsLayout: node)
       .disposed(by: disposeBag)
 
@@ -172,7 +169,7 @@ final class JournalViewController: BaseViewController, FactoryModule, View {
       .map {
         $0.beer?.kind.text
       }
-      .bind(to: beerKindTextNode.rx.text(AttributeStyle.beerKindStyle.attributes),
+      .bind(to: beerKindTextNode.rx.text(Style.beerKind.attributes),
             setNeedsLayout: node)
       .disposed(by: disposeBag)
 
@@ -208,7 +205,7 @@ final class JournalViewController: BaseViewController, FactoryModule, View {
       .map {
         "\($0)"
       }
-      .bind(to: abuTextNode.rx.text(AttributeStyle.abuStyle.attributes))
+      .bind(to: abuTextNode.rx.text(Style.abu.attributes))
       .disposed(by: disposeBag)
 
     reactor.state
@@ -230,22 +227,7 @@ final class JournalViewController: BaseViewController, FactoryModule, View {
       .map {
         "\($0)"
       }
-      .bind(to: ratingNode.rx.text(AttributeStyle.suggestStyle.attributes))
-      .disposed(by: disposeBag)
-
-    reactor.state
-      .map {
-        $0.beer?.apperance
-      }
-      .bind { [weak self] apperance in
-        guard let apperance = apperance
-        else {
-          self?.apperanceNode = nil
-          return
-        }
-        self?.apperanceNode = TitleWithDescriptionNode(title: "외관", description: apperance)
-        self?.apperanceNode?.layoutIfNeeded()
-      }
+      .bind(to: ratingNode.rx.text(Style.suggest.attributes))
       .disposed(by: disposeBag)
 
     reactor.state
@@ -321,6 +303,17 @@ final class JournalViewController: BaseViewController, FactoryModule, View {
 // MARK: Layout Spec
 
 extension JournalViewController {
+  private func makeNameNode() -> AnyDisplayNode {
+    let nameNode = AnyDisplayNode { _, _ in
+      LayoutSpec {
+        InsetLayout(insets: .init(horizontalInset: 16.f)) {
+          self.nameTextNode
+        }
+      }
+    }
+    return nameNode
+  }
+
   private func makeInformationNode() -> AnyDisplayNode {
     let informationElements = [
       beerKindTextNode, beerTypeImageWithTextNode, nationImageWithTextNode
@@ -348,12 +341,12 @@ extension JournalViewController {
         }
       }
 
-      self.abuTitleTextNode.attributedText = "%".styled(with: AttributeStyle.abuTitleStyle)
+      self.abuTitleTextNode.attributedText = "ABU".styled(with: Style.abuTitle)
 
       return LayoutSpec {
-        RelativeLayout(horizontalPosition: .end) {
+        RelativeLayout(horizontalPosition: .start) {
           self.abuTitleTextNode
-            .padding([.top, .right], 1.f)
+            .padding(.left, 2.f)
         }
         CenterLayout {
           self.abuTextNode
@@ -374,21 +367,20 @@ extension JournalViewController {
         HStackLayout {
           VStackLayout(spacing: 10.f) {
             ASTextNode().then {
-              $0.attributedText = "추천 술잔".styled(with: AttributeStyle.suggestTitleStyle)
+              $0.attributedText = "추천 술잔".styled(with: Style.suggestTitle)
             }
             beerGlassImageNode
           }
             .flexGrow(1.f)
           VStackLayout(spacing: 10.f) {
             ASTextNode().then {
-              $0.attributedText = "추천 점수".styled(with: AttributeStyle.suggestTitleStyle)
+              $0.attributedText = "추천 점수".styled(with: Style.suggestTitle)
             }
             ratingNode
           }
             .flexGrow(1.f)
         }
           .padding(.horizontal, 16.f)
-          .padding(.top, 26.f)
       }
     }
   }
@@ -423,13 +415,13 @@ extension JournalViewController {
       LayoutSpec {
         VStackLayout(spacing: 16.f) {
           elements
-        }.padding(.top, 16.f)
+        }
       }
     }
   }
 
   private func makeContentsNode() -> AnyDisplayNode {
-    let elements = [apperanceNode, noseNode, tasteNode, opinionNode]
+    let elements = [noseNode, tasteNode, opinionNode]
       .compactMap {
       $0
     }

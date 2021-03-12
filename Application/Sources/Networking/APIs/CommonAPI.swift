@@ -26,8 +26,6 @@ extension CommonAPI: SugarTargetType {
     switch self {
     case let .code(groupCode):
       return ["groupCode": groupCode.rawValue]
-    default:
-      return [:]
     }
   }
 

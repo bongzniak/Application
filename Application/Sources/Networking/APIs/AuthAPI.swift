@@ -18,7 +18,7 @@ extension AuthAPI: SugarTargetType {
 
   var route: Route {
     switch self {
-    case let .facebookAuthority(token):
+    case .facebookAuthority(_):
       return .get("/authority/facebook")
     }
   }

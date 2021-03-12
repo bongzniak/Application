@@ -32,9 +32,6 @@ final class JournalListSectionReactor: Reactor {
   }
 
   func reduce(state: State, mutation: Mutation) -> State {
-    var newState = state
-    // switch mutation {
-    // }
-    return newState
+    state
   }
 }

@@ -44,13 +44,13 @@ final class JournalListViewCellNode: BaseASCellNode, FactoryModule, View {
     static let imageAfterSpacing = 16.f
   }
 
-  enum Attribute {
-    static var titleAttributes = StringStyle(
+  enum Style {
+    static var title = StringStyle(
       .font(UIFont.boldSystemFont(ofSize: 16.f))
-    ).attributes
-    static var opinionAttributes = StringStyle(
+    )
+    static var opinion = StringStyle(
       .font(UIFont.systemFont(ofSize: 12.f))
-    ).attributes
+    )
   }
 
   enum ImageConfigration {
@@ -143,7 +143,7 @@ final class JournalListViewCellNode: BaseASCellNode, FactoryModule, View {
       .map {
         $0.beer.name
       }
-      .bind(to: nameNode.rx.text(Attribute.titleAttributes),
+      .bind(to: nameNode.rx.text(Style.title.attributes),
             setNeedsLayout: self)
       .disposed(by: disposeBag)
 
@@ -151,7 +151,7 @@ final class JournalListViewCellNode: BaseASCellNode, FactoryModule, View {
       .map {
         $0.beer.opinion
       }
-      .bind(to: opinionNode.rx.text(Attribute.opinionAttributes),
+      .bind(to: opinionNode.rx.text(Style.opinion.attributes),
             setNeedsLayout: self)
       .disposed(by: disposeBag)
 
@@ -235,17 +235,9 @@ extension JournalListViewCellNode {
   }
 
   func makeInformationNode() -> ASDisplayNode {
-    var nodes: [ASDisplayNode] = [beerTypeImageNode, beerGlassImageNode]
-      .filter {
+    let nodes: [ASDisplayNode] = [beerTypeImageNode, beerGlassImageNode].filter {
       $0.url != nil
     }
-
-//    let spaceNode = makeSpaceNode()
-//    nodes.append(spaceNode)
-//
-//    if informationNodes.isNotEmpty {
-//      nodes.append(contentsOf: informationNodes)
-//    }
 
     return AnyDisplayNode { _, _ in
       LayoutSpec {

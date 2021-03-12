@@ -48,7 +48,7 @@ final class JournalViewReactor: Reactor {
 
   func mutate(action: Action) -> Observable<Mutation> {
     switch action {
-    case let .refresh:
+    case .refresh:
       let setBeer = journalService.journal(id: beerID)
         .asObservable()
         .map { beer -> Mutation in

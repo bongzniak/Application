@@ -16,11 +16,11 @@ class TitleWithDescriptionNode: ASDisplayNode {
     static let spacing: CGFloat = 12.f
   }
 
-  enum AttributeStyle {
-    static let nameStyle = StringStyle(
+  enum Style {
+    static let name = StringStyle(
       .font(UIFont.boldSystemFont(ofSize: 24.f))
     )
-    static let descriptionStyle = StringStyle(
+    static let description = StringStyle(
       .font(UIFont.systemFont(ofSize: 17.f))
     )
   }
@@ -35,9 +35,9 @@ class TitleWithDescriptionNode: ASDisplayNode {
 
     automaticallyManagesSubnodes = true
 
-    titleTextNode.attributedString = title.styled(with: AttributeStyle.nameStyle)
-    descriptionTextNode.attributedString = description.styled(
-      with: AttributeStyle.descriptionStyle
+    titleTextNode.attributedText = title.styled(with: Style.name)
+    descriptionTextNode.attributedText = description.styled(
+      with: Style.description
     )
   }
 

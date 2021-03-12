@@ -92,11 +92,12 @@ final class LoginViewController: BaseViewController, FactoryModule, View {
       }
       .filterNil()
       .distinctUntilChanged()
-      .subscribe(onNext: { [weak self] isLoggedIn in
+      .bind { [weak self] isLoggedIn in
         if isLoggedIn {
           self?.window.rootViewController = self?.mainTabBarControllerFactory.create()
         }
-      })
+      }
+      .disposed(by: disposeBag)
 
   }
 

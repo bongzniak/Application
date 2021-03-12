@@ -29,6 +29,7 @@ final class JournalService: JournalServiceType {
     if let beer = EntryLoader.beers.filter({ $0.id == id }).first {
       return .just(beer)
     }
-    return .just(Beer(id: "999999"))
+
+    return .just(Beer(id: id))
   }
 }

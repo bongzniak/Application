@@ -23,7 +23,7 @@ final class JournalModifyViewReactor: Reactor {
 
   let initialState = State()
 
-  init() {
+  init(id: String?, service: JournalService) {
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
@@ -32,9 +32,6 @@ final class JournalModifyViewReactor: Reactor {
   }
 
   func reduce(state: State, mutation: Mutation) -> State {
-    var state = state
-    // switch mutation {
-    // }
-    return state
+    state
   }
 }

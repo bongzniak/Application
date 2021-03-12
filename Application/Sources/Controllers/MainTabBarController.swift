@@ -96,6 +96,7 @@ final class MainTabBarController: UITabBarController, View, FactoryModule {
 //        $0.navigationBar.prefersLargeTitles = true
 //        $0.isNavigationBarHidden = true
 //        $0.hidesBottomBarWhenPushed = false
+        // $0.navigationBar.prefersLargeTitles = true
         $0.tabBarItem.title = tabBarItem.title
         $0.tabBarItem.image = tabBarItem.image
         $0.tabBarItem.imageInsets.top = 5

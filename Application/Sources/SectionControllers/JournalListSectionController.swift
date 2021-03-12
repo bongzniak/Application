@@ -63,7 +63,7 @@ final class JournalListSectionController: BaseASListSectionController<Beer>, Fac
   // MARK: ASSectionController
 
   override func nodeForItem(at index: Int) -> ASCellNode {
-    guard let beer = object, beer is Beer
+    guard let beer = object
     else {
       return ASCellNode()
     }
@@ -74,7 +74,7 @@ final class JournalListSectionController: BaseASListSectionController<Beer>, Fac
   override func didSelectItem(at index: Int) {
     super.didSelectItem(at: index)
 
-    guard let post = object, post is Beer
+    guard let post = object
     else {
       return
     }
@@ -127,7 +127,7 @@ extension JournalListSectionController: ListSupplementaryViewSource, ASSupplemen
   }
 
   func nodeForSupplementaryElement(ofKind kind: String, at index: Int) -> ASCellNode {
-    guard var post = object
+    guard let post = object
     else {
       return ASCellNode()
     }
