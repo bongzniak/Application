@@ -67,6 +67,15 @@ extension AppDependency {
       dependency: LoginViewController.Dependency.init
     )
 
+    // CommonCode
+    container.register(CodeListViewReactor.self) { _ in
+      CodeListViewReactor()
+    }
+    container.autoregister(
+      CodeListViewController.Factory.self,
+      dependency: CodeListViewController.Dependency.init
+    )
+
     // JournalListView
     container.register(JournalListViewReactor.self) { _ in
       JournalListViewReactor(journalService: journalService)
