@@ -50,8 +50,10 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
 
   lazy var nameText = ASEditableTextNode().then {
     $0.attributedPlaceholderText = "맥주 이름을 입력해주세요.".styled(with: Style.namePlaceHolder)
-    $0.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+    $0.textContainerInset = .zero
     $0.backgroundColor = .blue
+    $0.delegate = self
+    $0.maximumLinesToDisplay = 5
   }
 
   // MARK: Initializing
@@ -87,6 +89,8 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
   // MARK: Configuring
 
   func bind(reactor: Reactor) {
+
+    // nameText.rx.
   }
 
   // MARK: Layout Spec
@@ -97,5 +101,12 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
         scrollNode
       }
     }
+  }
+}
+
+// MARK: ASEditableTextNodeDelegate
+extension JournalModifyViewController: ASEditableTextNodeDelegate {
+  func editableTextNodeDidUpdateText(_ editableTextNode: ASEditableTextNode) {
+    editableTextNode.supernode?.setNeedsLayout()
   }
 }
