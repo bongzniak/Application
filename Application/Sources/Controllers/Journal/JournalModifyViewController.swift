@@ -26,7 +26,9 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
   // MARK: Dependency
 
   struct Dependency {
-    let reactorFactory: (String?) -> Reactor
+    let navigator: NavigatorType
+    let reactorFactory: (_ id: String?) -> Reactor
+    let codeListViewControllerFactory: CodeListViewController.Factory
   }
 
   struct Payload {
@@ -44,6 +46,9 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
 
   // MARK: Properties
 
+  let navigator: NavigatorType
+  let codeListViewControllerFactory: CodeListViewController.Factory
+
   // MARK: Node
 
   lazy var scrollNode = BaseASScrollNode()
@@ -56,12 +61,20 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
     $0.maximumLinesToDisplay = 5
   }
 
+  lazy var beerTypeButton = ASButtonNode().then {
+    $0.style.preferredSize = .init(width: 100.f, height: 60.f)
+    $0.backgroundColor = .gray
+  }
+
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
     defer {
       reactor = dependency.reactorFactory(payload.id)
     }
+
+    navigator = dependency.navigator
+    codeListViewControllerFactory = dependency.codeListViewControllerFactory
 
     super.init()
   }
@@ -76,7 +89,7 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
     super.viewDidLoad()
 
     scrollNode.layoutSpecBlock = { [unowned self] _, _ in
-      let elements = [nameText]
+      let elements = [nameText, beerTypeButton]
       return LayoutSpec {
         VStackLayout {
           elements
@@ -90,7 +103,14 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
 
   func bind(reactor: Reactor) {
 
-    // nameText.rx.
+    // Action
+
+    beerTypeButton.rx.tap
+      .bind { [unowned self] in
+      let vc = codeListViewControllerFactory.create(payload: .init(groupCodeType: .beerType))
+      vc.delegate = self
+      navigator.push(vc)
+    }
   }
 
   // MARK: Layout Spec
@@ -105,8 +125,16 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
 }
 
 // MARK: ASEditableTextNodeDelegate
+
 extension JournalModifyViewController: ASEditableTextNodeDelegate {
   func editableTextNodeDidUpdateText(_ editableTextNode: ASEditableTextNode) {
     editableTextNode.supernode?.setNeedsLayout()
+  }
+}
+
+extension JournalModifyViewController: CodeListViewControllerDelegate {
+  func selectedCode(groupCodeType: GroupCodeType, code: Code) {
+    log.info("groupCodeType: \(groupCodeType)")
+    log.info("code: %o", code)
   }
 }

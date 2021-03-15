@@ -26,7 +26,6 @@ final class JournalListViewReactor: Reactor {
   struct State {
     var isRefreshing: Bool = false
     var isLoading: Bool = false
-    var page: Int = 0
     var sections: [JournalListSection] = []
   }
 

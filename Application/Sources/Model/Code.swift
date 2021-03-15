@@ -12,18 +12,18 @@ enum GroupCodeType: String {
 }
 
 class GroupCode {
-  var groupCode: GroupCodeType
+  var groupCodeType: GroupCodeType
   var codes: [Code] = []
 
-  init(groupCode: GroupCodeType, codes: [Code]) {
-    self.groupCode = groupCode
+  init(groupCodeType: GroupCodeType, codes: [Code]) {
+    self.groupCodeType = groupCodeType
     self.codes = codes
   }
 }
 
 class Code: NSObject, ModelType {
   enum Event {
-    case selectedCode(groupCode: GroupCodeType, code: Code)
+    case selectedCode(groupCodeType: GroupCodeType, code: Code)
   }
 
   var id: String

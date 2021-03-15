@@ -2,8 +2,6 @@
 // Created by bongzniak on 2021/02/28.
 //
 
-import UIKit
-import RxSwift
 import RxIGListKit
 import IGListKit
 

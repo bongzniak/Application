@@ -41,8 +41,9 @@ extension AppDependency {
     var plugins: [PluginType] = [LoggingPlugin()]
 
     var networking = Networking(plugins: plugins)
-    let authService = AuthService(networking: networking)
-    let appStoreService = AppStoreService(networking: networking)
+    let appStoreService: AppStoreServiceType = AppStoreService(networking: networking)
+    let authService: AuthServiceType = AuthService(networking: networking)
+    let commonService: CommonServiceType = CommonService(networking: networking)
 
     // Append AuthPlugin plgunin
     plugins.append(AuthPlugin(authService: authService))
@@ -67,14 +68,33 @@ extension AppDependency {
       dependency: LoginViewController.Dependency.init
     )
 
-    // CommonCode
-    container.register(CodeListViewReactor.self) { _ in
-      CodeListViewReactor()
+    // CodeListView
+    container.register(CodeListViewController.Factory.self) { resolver in
+      CodeListViewController.Factory(
+        dependency: .init(
+          reactorFactory: { (groupCodeType: GroupCodeType) -> CodeListViewReactor in
+            CodeListViewReactor(commonService: commonService, groupCodeType: groupCodeType)
+          },
+          codeListSectionControllerFactory: resolver
+            .resolve(CodeListSectionController.Factory.self)!
+        )
+      )
     }
+
+    // CodeListSectionController
     container.autoregister(
-      CodeListViewController.Factory.self,
-      dependency: CodeListViewController.Dependency.init
+      CodeListSectionController.Factory.self,
+      dependency: CodeListSectionController.Dependency.init
     )
+
+    // CodeListSectionController
+    container.register(CodeListViewCellNode.Factory.self) { _ in
+      CodeListViewCellNode.Factory(dependency: .init(
+        reactorFactory: { (groupCodeType: GroupCodeType, code: Code) -> CodeListViewCellReactor in
+          CodeListViewCellReactor(groupCodeType: groupCodeType, code: code)
+        }
+      ))
+    }
 
     // JournalListView
     container.register(JournalListViewReactor.self) { _ in
@@ -95,15 +115,17 @@ extension AppDependency {
     }
 
     // JournalModifyView
-    container.register(JournalModifyViewController.Factory.self) { _ in
+    container.register(JournalModifyViewController.Factory.self) { resolver in
       JournalModifyViewController.Factory(dependency: .init(
+        navigator: resolver.resolve(NavigatorType.self)!,
         reactorFactory: { (id: String?) -> JournalModifyViewReactor in
           JournalModifyViewReactor(id: id, service: journalService)
-        }
+        },
+        codeListViewControllerFactory: resolver.resolve(CodeListViewController.Factory.self)!
       ))
     }
 
-    // PostListSectionController
+    // JournalListSectionController
     container.autoregister(
       JournalListSectionController.Factory.self,
       dependency: JournalListSectionController.Dependency.init

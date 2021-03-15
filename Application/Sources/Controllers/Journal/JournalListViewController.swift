@@ -46,7 +46,9 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
 
   // MARK: Properties
 
-  let dependency: Dependency
+  let navigator: NavigatorType
+  let journalModifyViewControllerFactory: JournalModifyViewController.Factory
+  let postListSectionControllerFactory: JournalListSectionController.Factory
 
   var posts: [Beer] = []
 
@@ -70,15 +72,10 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
 
   let objectsSignal = BehaviorSubject<[JournalListSection]>(value: [])
   lazy var dataSource = RxListAdapterDataSource<JournalListSection>(
-    sectionControllerProvider: { [weak self] (_, object) -> ListSectionController in
-      guard let `self` = self
-      else {
-        return ListSectionController()
-      }
-
-      switch object {
-      case .post(let post):
-        return self.dependency.postListSectionControllerFactory.create()
+    sectionControllerProvider: { [unowned self] (_, section) -> ListSectionController in
+      switch section {
+      case let .post(post):
+        return self.postListSectionControllerFactory.create()
       }
     }
   )
@@ -93,12 +90,10 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
     defer {
       reactor = dependency.reactor
     }
-    self.dependency = Dependency(
-      navigator: dependency.navigator,
-      reactor: dependency.reactor,
-      journalModifyViewControllerFactory: dependency.journalModifyViewControllerFactory,
-      postListSectionControllerFactory: dependency.postListSectionControllerFactory
-    )
+
+    navigator = dependency.navigator
+    journalModifyViewControllerFactory = dependency.journalModifyViewControllerFactory
+    postListSectionControllerFactory = dependency.postListSectionControllerFactory
 
     super.init()
 
@@ -140,19 +135,12 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
       .disposed(by: disposeBag)
 
     buttonNode.rx.tap
-    .bind(onNext: { [weak self] in
-      self?.buttonNodeDidTap()
-    })
-    .disposed(by: disposeBag)
+      .bind(onNext: { [weak self] in
+        self?.buttonNodeDidTap()
+      })
+      .disposed(by: disposeBag)
 
     // State
-
-    reactor.state.map {
-        $0.isRefreshing
-      }
-      .distinctUntilChanged()
-      .bind(to: refreshControl.rx.isRefreshing)
-      .disposed(by: self.disposeBag)
 
     reactor.state.map {
         $0.isRefreshing
@@ -202,10 +190,10 @@ final class JournalListViewController: BaseViewController, FactoryModule, View {
 
 extension JournalListViewController {
   func buttonNodeDidTap() {
-    let vc = dependency.journalModifyViewControllerFactory.create(payload: .init(id: nil))
+    let vc = journalModifyViewControllerFactory.create(payload: .init(id: nil))
     let navigation = UINavigationController(rootViewController: vc)
     navigation.modalPresentationStyle = .fullScreen
-    dependency.navigator.present(navigation)
+    navigator.present(navigation)
   }
 }
 

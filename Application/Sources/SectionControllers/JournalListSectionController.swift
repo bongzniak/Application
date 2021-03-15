@@ -16,10 +16,9 @@ import RxSwift
 import RxCocoa_Texture
 import URLNavigator
 
-final class JournalListSectionController: BaseASListSectionController<Beer>, FactoryModule, View {
+final class JournalListSectionController: BaseASListSectionController<Beer>, FactoryModule {
 
   typealias Node = JournalListSectionController
-  typealias Reactor = JournalListSectionReactor
 
   // MARK: Dependency
 
@@ -32,6 +31,7 @@ final class JournalListSectionController: BaseASListSectionController<Beer>, Fac
   // MARK: Constants
 
   // MARK: Properties
+
   let dependency: Dependency
 
   // MARK: Node
@@ -45,7 +45,6 @@ final class JournalListSectionController: BaseASListSectionController<Beer>, Fac
       journalListViewCellNodeFactory: dependency.journalListViewCellNodeFactory
     )
 
-
     super.init()
 
     supplementaryViewSource = self
@@ -56,9 +55,6 @@ final class JournalListSectionController: BaseASListSectionController<Beer>, Fac
   }
 
   // MARK: Configuring
-
-  func bind(reactor: JournalListSectionReactor) {
-  }
 
   // MARK: ASSectionController
 

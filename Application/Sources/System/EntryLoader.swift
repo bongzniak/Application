@@ -7,7 +7,7 @@ import Foundation
 // swiftlint:disable line_length
 struct EntryLoader {
   static var beerKindCodes: GroupCode = GroupCode(
-    groupCode: .beerKind,
+    groupCodeType: .beerKind,
     codes: [
       Code(
         id: "001",
@@ -61,7 +61,7 @@ struct EntryLoader {
     ]
   )
   static var beerTypeCodes: GroupCode = GroupCode(
-    groupCode: .beerType,
+    groupCodeType: .beerType,
     codes: [
       Code(
         id: "001",
@@ -78,7 +78,7 @@ struct EntryLoader {
         order: 0
       ),
       Code(
-        id: "002",
+        id: "003",
         text: "Can",
         information: "",
         imageURLString: "https://beer-journal-s3.s3.ap-northeast-2.amazonaws.com/image/code/beerType/can.png",
@@ -87,7 +87,7 @@ struct EntryLoader {
     ]
   )
   static var beerGlassCodes: GroupCode = GroupCode(
-    groupCode: .beerGlass,
+    groupCodeType: .beerGlass,
     codes: [
       Code(
         id: "001",
@@ -134,7 +134,7 @@ struct EntryLoader {
     ]
   )
   static var nationCodes: GroupCode = GroupCode(
-    groupCode: .beerGlass,
+    groupCodeType: .beerGlass,
     codes: [
       Code(
         id: "KR",

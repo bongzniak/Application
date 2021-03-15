@@ -8,7 +8,7 @@ import Alamofire
 import RxSwift
 
 protocol CommonServiceType {
-  func codes(groupCode: GroupCodeType) -> Single<[Code]>
+  func codes(groupCodeType: GroupCodeType) -> Single<[Code]>
 }
 
 final class CommonService: CommonServiceType {
@@ -19,9 +19,8 @@ final class CommonService: CommonServiceType {
     self.networking = networking
   }
 
-  func codes(groupCode: GroupCodeType) -> Single<[Code]> {
-
-    switch groupCode {
+  func codes(groupCodeType: GroupCodeType) -> Single<[Code]> {
+    switch groupCodeType {
     case .beerKind:
       return .just(EntryLoader.beerKindCodes.codes)
     case .beerType:
