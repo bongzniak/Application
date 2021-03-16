@@ -42,6 +42,10 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
       .font(UIFont.systemFont(ofSize: 12.f)),
       .color(UIColor.gray)
     )
+
+    static let beerCode = StringStyle(
+      .font(UIFont.systemFont(ofSize: 16.f))
+    )
   }
 
   // MARK: Properties
@@ -59,6 +63,11 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
     $0.backgroundColor = .blue
     $0.delegate = self
     $0.maximumLinesToDisplay = 5
+  }
+
+  lazy var beerKindButton = ASButtonNode().then {
+    $0.style.preferredSize = .init(width: 100.f, height: 60.f)
+    $0.backgroundColor = .blue
   }
 
   lazy var beerTypeButton = ASButtonNode().then {
@@ -89,7 +98,7 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
     super.viewDidLoad()
 
     scrollNode.layoutSpecBlock = { [unowned self] _, _ in
-      let elements = [nameText, beerTypeButton]
+      let elements = [nameText, beerKindButton, beerTypeButton]
       return LayoutSpec {
         VStackLayout {
           elements
@@ -105,12 +114,49 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
 
     // Action
 
+    beerKindButton.rx.tap
+      .flatMap { [unowned self] in
+        selectedCode(groupCodeType: .beerKind)
+      }
+      .map {
+        Reactor.Action.updateBeerKindCode($1)
+      }
+      .bind(to: reactor.action)
+      .disposed(by: disposeBag)
+
     beerTypeButton.rx.tap
-      .bind { [unowned self] in
-      let vc = codeListViewControllerFactory.create(payload: .init(groupCodeType: .beerType))
-      vc.delegate = self
-      navigator.push(vc)
-    }
+      .flatMap { [unowned self] in
+        selectedCode(groupCodeType: .beerType)
+      }
+      .map {
+        Reactor.Action.updateBeerTypeCode($1)
+      }
+      .bind(to: reactor.action)
+      .disposed(by: disposeBag)
+
+    // State
+
+    reactor.state
+      .map {
+        $0.beerKindCode?.text
+      }
+      .bind(to: beerKindButton.rx.text(Style.beerCode.attributes, target: .normal))
+      .disposed(by: disposeBag)
+
+    reactor.state
+      .map {
+        $0.beerTypeCode?.text
+      }
+      .bind(to: beerTypeButton.rx.text(Style.beerCode.attributes, target: .normal))
+      .disposed(by: disposeBag)
+  }
+
+  func selectedCode(
+    groupCodeType: GroupCodeType
+  ) -> Observable<(groupCodeType: GroupCodeType, code: Code)> {
+    let vc = codeListViewControllerFactory.create(payload: .init(groupCodeType: groupCodeType))
+    navigator.push(vc)
+    return vc.selectedCode
   }
 
   // MARK: Layout Spec
@@ -129,12 +175,5 @@ final class JournalModifyViewController: BaseViewController, FactoryModule, View
 extension JournalModifyViewController: ASEditableTextNodeDelegate {
   func editableTextNodeDidUpdateText(_ editableTextNode: ASEditableTextNode) {
     editableTextNode.supernode?.setNeedsLayout()
-  }
-}
-
-extension JournalModifyViewController: CodeListViewControllerDelegate {
-  func selectedCode(groupCodeType: GroupCodeType, code: Code) {
-    log.info("groupCodeType: \(groupCodeType)")
-    log.info("code: %o", code)
   }
 }

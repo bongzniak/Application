@@ -13,12 +13,18 @@ import RxSwift
 final class JournalModifyViewReactor: Reactor {
 
   enum Action {
+    case updateBeerKindCode(Code)
+    case updateBeerTypeCode(Code)
   }
 
   enum Mutation {
+    case setBeerKind(Code)
+    case setBeerType(Code)
   }
 
   struct State {
+    var beerKindCode: Code?
+    var beerTypeCode: Code?
   }
 
   let initialState = State()
@@ -27,26 +33,26 @@ final class JournalModifyViewReactor: Reactor {
   }
 
   func mutate(action: Action) -> Observable<Mutation> {
-    // switch action {
-    // }
-  }
+    switch action {
+    case let .updateBeerKindCode(code):
+      return .just(.setBeerKind(code))
 
-  func transform(mutation: Observable<Mutation>) -> Observable<Mutation> {
-    let event = Code.event.flatMap { [weak self] event in
-      self?.mutation(from: event) ?? .empty()
-    }
-    return Observable.of(mutation, event).merge()
-  }
-
-  func mutation(from event: Code.Event) -> Observable<Mutation> {
-    switch event {
-    case let .selectedCode(groupCodeType, code):
-      log.info("groupCodeType: \(groupCodeType) : code: \(code)")
-      return .empty()
+    case let .updateBeerTypeCode(code):
+      return .just(.setBeerType(code))
     }
   }
 
   func reduce(state: State, mutation: Mutation) -> State {
-    state
+    var state = state
+
+    switch mutation {
+    case let .setBeerKind(code):
+      state.beerKindCode = code
+
+    case let .setBeerType(code):
+      state.beerTypeCode = code
+    }
+
+    return state
   }
 }

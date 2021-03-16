@@ -9,10 +9,6 @@ import AsyncDisplayKit
 import RxSwift
 import RxCocoa_Texture
 
-protocol CodeListSectionControllerDelegate: class {
-  func selectedCode(groupCodeType: GroupCodeType, code: Code)
-}
-
 final class CodeListSectionController: BaseASListSectionController<Code>, FactoryModule {
 
   typealias Node = CodeListSectionController
@@ -32,27 +28,40 @@ final class CodeListSectionController: BaseASListSectionController<Code>, Factor
 
   // MARK: Properties
 
-  weak var delegate: CodeListSectionControllerDelegate?
-  let groupCodeType: GroupCodeType
-  let code: Code
+  private let selectCodeSubject = PublishSubject<(
+    groupCodeType: GroupCodeType,
+    code: Code
+  )>()
+  var selectedCode: Observable<(groupCodeType: GroupCodeType, code: Code)> {
+    selectCodeSubject.asObservable()
+  }
 
-  let codeListViewCellNodeFactory: CodeListViewCellNode.Factory
+  let cell: CodeListViewCellNode
 
   // MARK: Node
 
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    groupCodeType = payload.groupCodeType
-    code = payload.code
-
-    codeListViewCellNodeFactory = dependency.codeListViewCellNodeFactory
+    cell = dependency.codeListViewCellNodeFactory.create(
+      payload: .init(groupCodeType: payload.groupCodeType, code: payload.code)
+    )
 
     super.init()
+
+    cell.selectedCode
+      .subscribe(onNext: { [weak self] (groupCodeType, code) in
+        self?.selectCodeSubject.onNext((groupCodeType, code))
+      })
+      .disposed(by: disposeBag)
   }
 
   required convenience init?(coder aDecoder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
+  }
+
+  deinit {
+    selectCodeSubject.onCompleted()
   }
 
   // MARK: Configuring
@@ -60,11 +69,7 @@ final class CodeListSectionController: BaseASListSectionController<Code>, Factor
   // MARK: ASSectionController
 
   override func nodeForItem(at index: Int) -> ASCellNode {
-    let cell = codeListViewCellNodeFactory.create(
-      payload: .init(groupCodeType: groupCodeType, code: code)
-    )
-
-    return cell
+    cell
   }
 
   override func didSelectItem(at index: Int) {
@@ -74,7 +79,5 @@ final class CodeListSectionController: BaseASListSectionController<Code>, Factor
     else {
       return
     }
-
-    delegate?.selectedCode(groupCodeType: groupCodeType, code: code)
   }
 }

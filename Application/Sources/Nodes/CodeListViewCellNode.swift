@@ -14,6 +14,7 @@ import ReactorKit
 import AsyncDisplayKit
 import TextureSwiftSupport
 import RxSwift
+import RxCocoa
 import RxCocoa_Texture
 import BonMot
 
@@ -43,14 +44,29 @@ final class CodeListViewCellNode: BaseASCellNode, FactoryModule, View {
 
   // MARK: Properties
 
+  private let selectCodeSubject = PublishSubject<(
+    groupCodeType: GroupCodeType,
+    code: Code
+  )>()
+  var selectedCode: Observable<(groupCodeType: GroupCodeType, code: Code)> {
+    selectCodeSubject.asObservable()
+  }
+
+  let payload: Payload
+
   // MARK: Node
 
   lazy var nameTextNode = BaseASTextNode()
+  lazy var buttonNode = ASButtonNode()
 
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    defer { reactor = dependency.reactorFactory(payload.groupCodeType, payload.code) }
+    defer {
+      reactor = dependency.reactorFactory(payload.groupCodeType, payload.code)
+    }
+
+    self.payload = payload
 
     super.init()
   }
@@ -59,12 +75,29 @@ final class CodeListViewCellNode: BaseASCellNode, FactoryModule, View {
     fatalError("init(coder:) has not been implemented")
   }
 
+  deinit {
+    selectCodeSubject.onCompleted()
+  }
+
   // MARK: Configuring
 
   func bind(reactor: Reactor) {
 
-    reactor.state.map { $0.code.text }
+    reactor.state.map {
+        $0.code.text
+      }
       .bind(to: nameTextNode.rx.text(Style.nameText.attributes))
+      .disposed(by: disposeBag)
+
+    buttonNode.rx.tap
+      .subscribe(onNext: { [weak self] in
+        guard let `self` = self
+        else {
+          return
+        }
+        self.selectCodeSubject.onNext((self.payload.groupCodeType, self.payload.code))
+      })
+      .disposed(by: disposeBag)
   }
 
   // MARK: Layout Spec
@@ -72,9 +105,13 @@ final class CodeListViewCellNode: BaseASCellNode, FactoryModule, View {
   override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
     LayoutSpec {
       WrapperLayout {
-        InsetLayout(insets: .init(verticalInset: 16.f, horizontalInset: 10.f)) {
-          nameTextNode
-        }
+        OverlayLayout(content: {
+          InsetLayout(insets: .init(verticalInset: 16.f, horizontalInset: 10.f)) {
+            self.nameTextNode
+          }
+        }, overlay: {
+          buttonNode
+        })
       }
     }
   }

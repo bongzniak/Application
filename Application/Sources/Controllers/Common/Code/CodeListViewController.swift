@@ -45,7 +45,14 @@ final class CodeListViewController: BaseViewController, FactoryModule, View {
 
   // MARK: Properties
 
-  weak var delegate: CodeListViewControllerDelegate?
+  private let selectCodeSubject = PublishSubject<(
+    groupCodeType: GroupCodeType,
+    code: Code
+  )>()
+  var selectedCode: Observable<(groupCodeType: GroupCodeType, code: Code)> {
+    selectCodeSubject.asObservable()
+  }
+
   let groupCodeType: GroupCodeType
   let codeListSectionControllerFactory: CodeListSectionController.Factory
 
@@ -56,17 +63,18 @@ final class CodeListViewController: BaseViewController, FactoryModule, View {
   lazy var collectionNode = ASCollectionNode(collectionViewLayout: collectionViewFlowLayout)
 
   let objectSignal = BehaviorSubject<[CommonListSection]>(value: [])
-  lazy var dataSource = RxListAdapterDataSource<CommonListSection> {
-    [unowned self] (_, section) -> ListSectionController in
-    switch section {
-    case let .codeListCell(code):
-      let section = self.codeListSectionControllerFactory.create(
-        payload: .init(groupCodeType: self.groupCodeType, code: code)
-      )
-      section.delegate = self
-      return section
+  lazy var dataSource =
+    RxListAdapterDataSource<CommonListSection> { [unowned self] (_, section) ->
+      ListSectionController in
+      switch section {
+      case let .codeListCell(code):
+        let section = self.codeListSectionControllerFactory.create(
+          payload: .init(groupCodeType: self.groupCodeType, code: code)
+        )
+        self.subscribeSection(section)
+        return section
+      }
     }
-  }
 
   lazy var adapter: ListAdapter = {
     ListAdapter(updater: ListAdapterUpdater(), viewController: self)
@@ -75,7 +83,9 @@ final class CodeListViewController: BaseViewController, FactoryModule, View {
   // MARK: Initializing
 
   init(dependency: Dependency, payload: Payload) {
-    defer { reactor = dependency.reactorFactory(payload.groupCodeType) }
+    defer {
+      reactor = dependency.reactorFactory(payload.groupCodeType)
+    }
 
     groupCodeType = payload.groupCodeType
     codeListSectionControllerFactory = dependency.codeListSectionControllerFactory
@@ -90,6 +100,10 @@ final class CodeListViewController: BaseViewController, FactoryModule, View {
     fatalError("init(coder:) has not been implemented")
   }
 
+  deinit {
+    selectCodeSubject.onCompleted()
+  }
+
   // MARK: Configuring
 
   func bind(reactor: Reactor) {
@@ -97,7 +111,9 @@ final class CodeListViewController: BaseViewController, FactoryModule, View {
     // Action
 
     rx.viewDidLoad
-      .map { Reactor.Action.refresh }
+      .map {
+        Reactor.Action.refresh
+      }
       .bind(to: reactor.action)
       .disposed(by: disposeBag)
 
@@ -140,8 +156,13 @@ final class CodeListViewController: BaseViewController, FactoryModule, View {
   }
 }
 
-extension CodeListViewController: CodeListSectionControllerDelegate {
-  func selectedCode(groupCodeType: GroupCodeType, code: Code) {
-     delegate?.selectedCode(groupCodeType: groupCodeType, code: code)
+extension CodeListViewController {
+  func subscribeSection(_ section: CodeListSectionController) {
+    section.selectedCode
+      .subscribe { [weak self] (groupCodeType, code) in
+        self?.selectCodeSubject.onNext((groupCodeType, code))
+        self?.navigationController?.popViewController(animated: true)
+      }
+      .disposed(by: self.disposeBag)
   }
 }
